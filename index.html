@@ -152,7 +152,7 @@
   const firebaseConfig={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(firebaseConfig);
   const db=firebase.database();
-  const ROOT="cardiac_demo_v3",COUNTER=ROOT+"/kioskCounter",TICKETS=ROOT+"/tickets",NUMBERS=ROOT+"/numbers";
+  const ROOT="cardiac",COUNTER=ROOT+"/kioskCounter",TICKETS=ROOT+"/tickets",NUMBERS=ROOT+"/numbers";
 
   db.ref(COUNTER).on("value",s=>{const v=s.val()||0;el.next.textContent=v?((v%1000)+1):1;});
   function validMRN(v){return /^[0-9]{4,}$/.test(v);}
