@@ -1,126 +1,190 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>بطاقات صيدلية القلب - تجريبي</title>
+  <title>كيـوسك التذاكر - Cardiac</title>
   <style>
-    :root{ --ink:#111; --muted:#6b7280; --ok:#22c55e; --bg:#ffffff; }
+    :root{
+      --bg:#ffffff; --ink:#0f172a; --muted:#6b7280; --blue:#2563eb; --shadow:0 12px 34px rgba(0,0,0,.06);
+      --error:#dc2626; --panel:#ffffff; --line:#e5e7eb;
+    }
     *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-    header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #e5e7eb}
-    h1{margin:0;font-size:clamp(18px,4.6vw,28px);font-weight:800}
-    .lang{display:flex;gap:8px}
-    .lang button{border:1px solid #d1d5db;background:#f3f4f6;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700}
-    .lang button.active{background:#111;color:#fff;border-color:#111}
-    main{max-width:840px;margin:0 auto;padding:20px 16px}
-    .card{border:1px solid #e5e7eb;border-radius:14px;padding:18px 16px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-    label{display:block;margin-bottom:8px;font-weight:700}
-    input[type="text"]{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
-    .row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
-    .btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
-    .btn.primary{background:var(--ok);color:#fff}
-    .muted{color:var(--muted);font-size:14px;margin-top:8px}
-    .hidden{display:none}
-    /* Ticket preview/print */
-    #ticket{margin-top:18px;border:1px dashed #d1d5db;border-radius:12px;padding:18px;text-align:center}
-    #ticket h2{margin:6px 0 10px 0;font-size:clamp(18px,4.6vw,28px)}
-    .bigNum{font-size:clamp(64px,16vw,140px);font-weight:900;margin:8px 0}
-    .mrn{font-size:clamp(18px,5vw,28px);font-weight:700}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Noto Naskh Arabic UI", "Noto Kufi Arabic", Tahoma, sans-serif;
+      display:flex; min-height:100vh;
+    }
+    .wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:2vh 2vw;}
+    .card{width:min(980px,96vw); background:var(--panel); border-radius:20px; box-shadow:var(--shadow);
+      padding:3vh 3vw; text-align:center;}
+    .topbar{display:flex; justify-content:flex-end; align-items:center; gap:.5rem; margin-bottom:1rem;}
+    .langBtn{border:1px solid var(--line); background:#f8fafc; color:#0f172a; padding:.6rem .9rem;
+      border-radius:10px; cursor:pointer; font-weight:800;}
+    .langBtn.active{background:#0f172a; color:#fff; border-color:#0f172a;}
+    .welcome{font-weight:900; font-size:clamp(42px,9vw,92px); letter-spacing:.5px; margin:1vh 0 .4vh;}
+    .subtitle{font-size:clamp(18px,3.6vw,28px); color:#1f2937; margin:0 0 3vh;}
+    form{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+      margin:0 auto; max-width:720px;}
+    input[type="text"]{
+      width:100%; padding:18px; border:2px solid #e5e7eb; border-radius:14px; outline:none;
+      font-size:clamp(22px,4.2vw,28px); text-align:center; background:#fff; color:#0f172a;
+    }
+    input[type="text"]:focus{border-color:#93c5fd; box-shadow:0 0 0 4px #dbeafe;}
+    .btn{border:0; border-radius:14px; padding:14px 22px; cursor:pointer; font-weight:900;
+      background:var(--blue); color:#fff; font-size:clamp(18px,3.8vw,22px);}
+    .error{color:var(--error); font-size:clamp(14px,3.2vw,16px); min-height:22px; margin-top:8px;}
+    .nextWrap{margin-top:14px; color:var(--muted); font-size:clamp(14px,3.2vw,16px)}
+    .nextNum{font-weight:800; color:#111;}
+
+    /* ===== Print ticket template ===== */
     @media print{
-      header, .card, .muted { display:none !important; }
-      #ticket{border:0;margin:0;padding:0}
-      body{background:#fff}
+      @page{size:80mm auto; margin:0;}
+      html,body{background:#fff}
+      body>*{display:none !important;}
+      #ticket{display:block !important; width:100%; margin:0; padding:12px 10px; text-align:center; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Naskh Arabic UI", "Noto Kufi Arabic", Tahoma, sans-serif;}
+      /* Paper styling */
+      #ticket .paper{
+        width:100%;
+        border-radius:6px;
+        padding:4px 0 8px;
+      }
+      #ticket .welcome{
+        font-weight:900;
+        font-size:18pt;
+        margin:4px 0 2px;
+      }
+      #ticket .sub{
+        font-size:12pt;
+        margin:0 0 2px;
+      }
+      #ticket .bigNum{
+        font-weight:900;
+        font-size:56pt;
+        line-height:1;
+        margin:4px 0 0;
+      }
+      #ticket .mrn{
+        font-size:18pt;
+        margin:2px 0 2px;
+      }
+      #ticket .ts{
+        font-size:12pt;
+        margin:4px 0;
+      }
+      #ticket .thanks{
+        font-size:16pt;
+        margin:4px 0 2px;
+      }
+      #ticket .line{height:2px; background:#000; margin:6px 0;}
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
-  <header>
-    <h1 id="title">بطاقات صيدلية القلب (تجريبي)</h1>
-    <div class="lang">
-      <button id="btnAr" class="active">العربية</button>
-      <button id="btnEn">English</button>
-    </div>
-  </header>
-
-  <main>
+  <div class="wrap">
     <div class="card">
-      <label for="mrn" id="lblMrn">أدخل رقم الملف الطبي (MRN)</label>
-      <input id="mrn" type="text" inputmode="numeric" placeholder="مثال: 123456" />
-      <div class="row">
-        <button id="btnIssue" class="btn primary">إصدار التذكرة</button>
+      <div class="topbar">
+        <button id="btnAr" class="langBtn active">العربية</button>
+        <button id="btnEn" class="langBtn">English</button>
       </div>
-      <div id="msg" class="muted"></div>
-
-      <div id="ticket" class="hidden">
-        <h2 id="ticketTitle">تذكرة الانتظار</h2>
-        <div class="bigNum" id="ticketNumber">—</div>
-        <div class="mrn"><span id="mrnLabel">رقم الملف:</span> <span id="ticketMrn">—</span></div>
+      <div class="welcome" id="welcome">مرحباً</div>
+      <div class="subtitle" id="subtitle">يرجى إدخال رقم الملف الطبي (MRN)</div>
+      <form id="kioskForm">
+        <input id="mrn" type="text" inputmode="numeric" autocomplete="off" placeholder="MRN">
+        <button class="btn" type="submit" id="printBtn">طباعة التذكرة</button>
+      </form>
+      <div id="err" class="error"></div>
+      <div class="nextWrap" id="nextWrap">
+        <span id="nextLabel">الرقم التالي:</span> <span id="next" class="nextNum">1</span>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Printable ticket -->
+  <div id="ticket" style="display:none">
+    <div class="paper">
+      <div class="welcome" id="tWelcome">Welcome</div>
+      <div class="sub" id="tSub">Your queuing number</div>
+      <div class="bigNum" id="tNum">1</div>
+      <div class="mrn" id="tMrn">6754</div>
+      <div class="ts" id="tTs">2023‑08‑07 18:30</div>
+      <div class="line"></div>
+      <div class="thanks" id="tThanks">Thank you for waiting</div>
+    </div>
+  </div>
 
 <script>
 (function(){
-  const STR = {
-    ar:{ title:'بطاقات صيدلية القلب (تجريبي)', enterMrn:'أدخل رقم الملف الطبي (MRN)', issue:'إصدار التذكرة', ticketTitle:'تذكرة الانتظار', mrnLabel:'رقم الملف:', done:(n)=>`تم إصدار التذكرة الرقم ${n}` },
-    en:{ title:'Cardiac Pharmacy Tickets (Demo)', enterMrn:'Enter Medical Record Number (MRN)', issue:'Issue Ticket', ticketTitle:'Waiting Ticket', mrnLabel:'MRN:', done:(n)=>`Ticket issued: ${n}` }
+  const STR={
+    ar:{welcome:"مرحباً",subtitle:"يرجى إدخال رقم الملف الطبي (MRN)",placeholder:"MRN",print:"طباعة التذكرة",nextLabel:"الرقم التالي:",err:"Please enter valid MRN",
+        tWelcome:"مرحباً", tSub:"رقم دورك", tThanks:"شكراً لانتظارك"},
+    en:{welcome:"Welcome",subtitle:"Please write your MRN",placeholder:"MRN",print:"Print Ticket",nextLabel:"Next number:",err:"Please enter valid MRN",
+        tWelcome:"Welcome", tSub:"Your queuing number", tThanks:"Thank you for waiting"}
   };
-  let lang='ar';
-  const $ = (id)=>document.getElementById(id);
-  const el = { title:$('title'), btnAr:$('btnAr'), btnEn:$('btnEn'), lblMrn:$('lblMrn'), mrn:$('mrn'), btnIssue:$('btnIssue'), msg:$('msg'), ticket:$('ticket'), ticketTitle:$('ticketTitle'), ticketNumber:$('ticketNumber'), ticketMrn:$('ticketMrn'), mrnLabel:$('mrnLabel') };
-  function applyLang(){ const S=STR[lang]; document.title=S.title; $('title').textContent=S.title; el.lblMrn.textContent=S.enterMrn; el.btnIssue.textContent=S.issue; el.ticketTitle.textContent=S.ticketTitle; el.mrnLabel.textContent=S.mrnLabel; document.documentElement.lang=lang; document.documentElement.dir=(lang==='ar'?'rtl':'ltr'); el.btnAr.classList.toggle('active', lang==='ar'); el.btnEn.classList.toggle('active', lang==='en'); }
-  el.btnAr.onclick=()=>{lang='ar';applyLang();};
-  el.btnEn.onclick=()=>{lang='en';applyLang();};
+  let lang=localStorage.getItem("kiosk_lang")||"ar";
+  const $=id=>document.getElementById(id);
+  const el={btnAr:$("btnAr"),btnEn:$("btnEn"),welcome:$("welcome"),subtitle:$("subtitle"),mrn:$("mrn"),printBtn:$("printBtn"),err:$("err"),next:$("next"),nextLabel:$("nextLabel")};
+  const tl={tWelcome:$("tWelcome"),tSub:$("tSub"),tNum:$("tNum"),tMrn:$("tMrn"),tTs:$("tTs"),tThanks:$("tThanks")};
+
+  function applyLang(){
+    const S=STR[lang];
+    document.documentElement.lang=lang;
+    document.documentElement.dir=(lang==="ar")?"rtl":"ltr";
+    el.btnAr.classList.toggle("active",lang==="ar");
+    el.btnEn.classList.toggle("active",lang==="en");
+    el.welcome.textContent=S.welcome;
+    el.subtitle.textContent=S.subtitle;
+    el.mrn.placeholder=S.placeholder;
+    el.printBtn.textContent=S.print;
+    el.nextLabel.textContent=S.nextLabel;
+    tl.tWelcome.textContent=S.tWelcome;
+    tl.tSub.textContent=S.tSub;
+    tl.tThanks.textContent=S.tThanks;
+  }
+  $("btnAr").onclick=()=>{lang="ar";localStorage.setItem("kiosk_lang",lang);applyLang();};
+  $("btnEn").onclick=()=>{lang="en";localStorage.setItem("kiosk_lang",lang);applyLang();};
   applyLang();
 
-  const firebaseConfig = { apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw", authDomain:"q-matic-b7d77.firebaseapp.com", databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com", projectId:"q-matic-b7d77", storageBucket:"q-matic-b7d77.appspot.com", messagingSenderId:"908187704899", appId:"1:908187704899:web:b8bcf33cda90bafe81bef6" };
+  // Firebase
+  const firebaseConfig={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  const db=firebase.database();
+  const ROOT="cardiac_demo_v3",COUNTER=ROOT+"/kioskCounter",TICKETS=ROOT+"/tickets",NUMBERS=ROOT+"/numbers";
 
-  const ROOT='cardiac_demo';
-  const COUNTER = ROOT + '/kioskCounter';
-  const TICKETS = ROOT + '/tickets';
-  const NUMBERS = ROOT + '/numbers';
+  db.ref(COUNTER).on("value",s=>{const v=s.val()||0;el.next.textContent=v?((v%1000)+1):1;});
+  function validMRN(v){return /^[0-9]{4,}$/.test(v);}
+  function showError(m){el.err.textContent=m||"";}
+  function nextNumber(){return new Promise((res,rej)=>{
+    const r=db.ref(COUNTER);
+    r.transaction(c=>{let v=(typeof c==="number"?c:0)+1; if(v>1000) v=1; return v;},
+      (e,ok,s)=>{ if(e||!ok){rej(e||new Error("fail"));return;} res(s.val()); });
+  });}
 
-  function cleanMRN(v){ return (v||'').replace(/[^0-9A-Za-z]/g,'').slice(0,20); }
-
-  db.ref(COUNTER).on('value', snap => { const v = snap.val() || 0; el.msg.textContent = v ? (lang==='ar' ? ('آخر تذكرة: '+v) : ('Last issued ticket: '+v)) : (lang==='ar'?'لا توجد تذاكر بعد':'No tickets yet'); });
-
-  el.btnIssue.onclick = async ()=>{
-    const mrnVal = cleanMRN(el.mrn.value);
+  $("kioskForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const mrn=(el.mrn.value||"").trim();
+    if(!validMRN(mrn)){showError(STR[lang].err); el.mrn.focus(); return;}
+    showError("");
     try{
-      const n = await nextNumber();
-      const ticket = { mrn: mrnVal || null, createdAt: Date.now(), number: n, lang };
-      await firebase.database().ref(TICKETS+'/'+n).set(ticket);
-      await firebase.database().ref(NUMBERS+'/'+n).set('printed');
-      el.ticketNumber.textContent = n;
-      el.ticketMrn.textContent = mrnVal || (lang==='ar' ? 'غير متوفر' : 'N/A');
-      el.ticket.classList.remove('hidden');
-      el.msg.textContent = STR[lang].done(n);
-      setTimeout(()=>window.print(), 50);
-      el.mrn.value='';
-    }catch(e){
-      console.error(e);
-      el.msg.textContent = (lang==='ar'?'تعذر إصدار التذكرة':'Could not issue ticket');
-    }
-  };
+      const n=await nextNumber();
+      await db.ref(TICKETS+"/"+n).set({number:n,mrn,createdAt:Date.now()});
+      await db.ref(NUMBERS+"/"+n).set("printed");
 
-  function nextNumber(){
-    return new Promise((resolve,reject)=>{
-      const ref = firebase.database().ref(COUNTER);
-      ref.transaction(curr=>{
-        let v = (typeof curr==='number'?curr:0) + 1;
-        if(v>1000) v = 1;
-        return v;
-      }, (err, committed, snap)=>{
-        if(err || !committed){ reject(err||new Error('not committed')); return; }
-        resolve(snap.val());
-      });
-    });
-  }
+      // Fill template
+      tl.tNum.textContent=n;
+      tl.tMrn.textContent=mrn;
+      tl.tTs.textContent=new Date().toLocaleString(lang==="ar"?"ar-SA":"en-US");
+
+      // Print
+      setTimeout(()=>window.print(),50);
+      setTimeout(()=>{el.mrn.value=""; el.mrn.focus();},200);
+    }catch(err){console.error(err); showError(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket");}
+  });
+
+  window.onload=()=>el.mrn.focus();
 })();
 </script>
 </body>
