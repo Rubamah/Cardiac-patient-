@@ -38,45 +38,19 @@
     .nextWrap{margin-top:14px; color:var(--muted); font-size:clamp(14px,3.2vw,16px)}
     .nextNum{font-weight:800; color:#111;}
 
-    /* ===== Print ticket template ===== */
+    /* Print Ticket */
     @media print{
       @page{size:80mm auto; margin:0;}
       html,body{background:#fff}
       body>*{display:none !important;}
-      #ticket{display:block !important; width:100%; margin:0; padding:12px 10px; text-align:center; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Naskh Arabic UI", "Noto Kufi Arabic", Tahoma, sans-serif;}
-      /* Paper styling */
-      #ticket .paper{
-        width:100%;
-        border-radius:6px;
-        padding:4px 0 8px;
-      }
-      #ticket .welcome{
-        font-weight:900;
-        font-size:18pt;
-        margin:4px 0 2px;
-      }
-      #ticket .sub{
-        font-size:12pt;
-        margin:0 0 2px;
-      }
-      #ticket .bigNum{
-        font-weight:900;
-        font-size:56pt;
-        line-height:1;
-        margin:4px 0 0;
-      }
-      #ticket .mrn{
-        font-size:18pt;
-        margin:2px 0 2px;
-      }
-      #ticket .ts{
-        font-size:12pt;
-        margin:4px 0;
-      }
-      #ticket .thanks{
-        font-size:16pt;
-        margin:4px 0 2px;
-      }
+      #ticket{display:block !important; width:100%; margin:0; padding:12px 10px; text-align:center;}
+      #ticket .paper{width:100%;}
+      #ticket .welcome{font-weight:900; font-size:18pt;}
+      #ticket .sub{font-size:12pt;}
+      #ticket .bigNum{font-weight:900; font-size:56pt; line-height:1;}
+      #ticket .mrn{font-size:18pt; margin:2px 0 2px;}
+      #ticket .ts{font-size:12pt; margin:4px 0;}
+      #ticket .thanks{font-size:16pt;}
       #ticket .line{height:2px; background:#000; margin:6px 0;}
     }
   </style>
@@ -103,14 +77,14 @@
     </div>
   </div>
 
-  <!-- Printable ticket -->
+  <!-- Printable Ticket -->
   <div id="ticket" style="display:none">
     <div class="paper">
       <div class="welcome" id="tWelcome">Welcome</div>
       <div class="sub" id="tSub">Your queuing number</div>
       <div class="bigNum" id="tNum">1</div>
       <div class="mrn" id="tMrn">6754</div>
-      <div class="ts" id="tTs">2023‑08‑07 18:30</div>
+      <div class="ts" id="tTs">2023-08-07 18:30</div>
       <div class="line"></div>
       <div class="thanks" id="tThanks">Thank you for waiting</div>
     </div>
@@ -119,7 +93,7 @@
 <script>
 (function(){
   const STR={
-    ar:{welcome:"مرحباً",subtitle:"يرجى إدخال رقم الملف الطبي (MRN)",placeholder:"MRN",print:"طباعة التذكرة",nextLabel:"الرقم التالي:",err:"Please enter valid MRN",
+    ar:{welcome:"مرحباً",subtitle:"يرجى إدخال رقم الملف الطبي (MRN)",placeholder:"MRN",print:"طباعة التذكرة",nextLabel:"الرقم التالي:",err:"الرجاء إدخال رقم ملف صالح",
         tWelcome:"مرحباً", tSub:"رقم دورك", tThanks:"شكراً لانتظارك"},
     en:{welcome:"Welcome",subtitle:"Please write your MRN",placeholder:"MRN",print:"Print Ticket",nextLabel:"Next number:",err:"Please enter valid MRN",
         tWelcome:"Welcome", tSub:"Your queuing number", tThanks:"Thank you for waiting"}
@@ -148,20 +122,40 @@
   $("btnEn").onclick=()=>{lang="en";localStorage.setItem("kiosk_lang",lang);applyLang();};
   applyLang();
 
-  // Firebase
-  const firebaseConfig={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
+  // Firebase config
+  const firebaseConfig={
+    apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
+    authDomain:"q-matic-b7d77.firebaseapp.com",
+    databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",
+    projectId:"q-matic-b7d77",
+    storageBucket:"q-matic-b7d77.appspot.com",
+    messagingSenderId:"908187704899",
+    appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"
+  };
   firebase.initializeApp(firebaseConfig);
   const db=firebase.database();
-  const ROOT="cardiac",COUNTER=ROOT+"/kioskCounter",TICKETS=ROOT+"/tickets",NUMBERS=ROOT+"/numbers";
+  const ROOT="cardiac"; // ✅ MATCHES OPERATOR
 
-  db.ref(COUNTER).on("value",s=>{const v=s.val()||0;el.next.textContent=v?((v%1000)+1):1;});
+  db.ref(ROOT+"/counter").on("value",s=>{
+    const v=s.val()||0;
+    el.next.textContent=(v%1000)+1;
+  });
+
   function validMRN(v){return /^[0-9]{4,}$/.test(v);}
   function showError(m){el.err.textContent=m||"";}
-  function nextNumber(){return new Promise((res,rej)=>{
-    const r=db.ref(COUNTER);
-    r.transaction(c=>{let v=(typeof c==="number"?c:0)+1; if(v>1000) v=1; return v;},
-      (e,ok,s)=>{ if(e||!ok){rej(e||new Error("fail"));return;} res(s.val()); });
-  });}
+  function nextNumber(){
+    return new Promise((res,rej)=>{
+      const r=db.ref(ROOT+"/counter");
+      r.transaction(c=>{
+        let v=(typeof c==="number"?c:0)+1;
+        if(v>1000) v=1;
+        return v;
+      },(e,ok,s)=>{
+        if(e||!ok){rej(e||new Error("fail"));return;}
+        res(s.val());
+      });
+    });
+  }
 
   $("kioskForm").addEventListener("submit",async e=>{
     e.preventDefault();
@@ -170,18 +164,21 @@
     showError("");
     try{
       const n=await nextNumber();
-      await db.ref(TICKETS+"/"+n).set({number:n,mrn,createdAt:Date.now()});
-      await db.ref(NUMBERS+"/"+n).set("printed");
+      await db.ref(`${ROOT}/mrn/${n}`).set(mrn);
+      await db.ref(`${ROOT}/printed/${n}`).set(true); // ✅ TURN GREEN
+      await db.ref(`${ROOT}/latest`).set({number:n,ts:Date.now()});
 
-      // Fill template
+      // Fill print template
       tl.tNum.textContent=n;
       tl.tMrn.textContent=mrn;
       tl.tTs.textContent=new Date().toLocaleString(lang==="ar"?"ar-SA":"en-US");
 
-      // Print
       setTimeout(()=>window.print(),50);
       setTimeout(()=>{el.mrn.value=""; el.mrn.focus();},200);
-    }catch(err){console.error(err); showError(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket");}
+    }catch(err){
+      console.error(err);
+      showError(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket");
+    }
   });
 
   window.onload=()=>el.mrn.focus();
