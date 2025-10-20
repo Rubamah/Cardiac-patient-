@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بطاقات صيدلية القلب - تجريبي</title>
+  <style>
+    :root{ --ink:#111; --muted:#6b7280; --ok:#22c55e; --bg:#ffffff; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+    h1{margin:0;font-size:clamp(18px,4.6vw,28px);font-weight:800}
+    .lang{display:flex;gap:8px}
+    .lang button{border:1px solid #d1d5db;background:#f3f4f6;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700}
+    .lang button.active{background:#111;color:#fff;border-color:#111}
+    main{max-width:840px;margin:0 auto;padding:20px 16px}
+    .card{border:1px solid #e5e7eb;border-radius:14px;padding:18px 16px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    label{display:block;margin-bottom:8px;font-weight:700}
+    input[type="text"]{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+    .row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+    .btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--ok);color:#fff}
+    .muted{color:var(--muted);font-size:14px;margin-top:8px}
+    .hidden{display:none}
+    /* Ticket preview/print */
+    #ticket{margin-top:18px;border:1px dashed #d1d5db;border-radius:12px;padding:18px;text-align:center}
+    #ticket h2{margin:6px 0 10px 0;font-size:clamp(18px,4.6vw,28px)}
+    .bigNum{font-size:clamp(64px,16vw,140px);font-weight:900;margin:8px 0}
+    .mrn{font-size:clamp(18px,5vw,28px);font-weight:700}
+    @media print{
+      header, .card, .muted { display:none !important; }
+      #ticket{border:0;margin:0;padding:0}
+      body{background:#fff}
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <header>
+    <h1 id="title">بطاقات صيدلية القلب (تجريبي)</h1>
+    <div class="lang">
+      <button id="btnAr" class="active">العربية</button>
+      <button id="btnEn">English</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <label for="mrn" id="lblMrn">أدخل رقم الملف الطبي (MRN)</label>
+      <input id="mrn" type="text" inputmode="numeric" placeholder="مثال: 123456" />
+      <div class="row">
+        <button id="btnIssue" class="btn primary">إصدار التذكرة</button>
+      </div>
+      <div id="msg" class="muted"></div>
+
+      <div id="ticket" class="hidden">
+        <h2 id="ticketTitle">تذكرة الانتظار</h2>
+        <div class="bigNum" id="ticketNumber">—</div>
+        <div class="mrn"><span id="mrnLabel">رقم الملف:</span> <span id="ticketMrn">—</span></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(function(){
+  const STR = {
+    ar:{ title:'بطاقات صيدلية القلب (تجريبي)', enterMrn:'أدخل رقم الملف الطبي (MRN)', issue:'إصدار التذكرة', ticketTitle:'تذكرة الانتظار', mrnLabel:'رقم الملف:', done:(n)=>`تم إصدار التذكرة الرقم ${n}` },
+    en:{ title:'Cardiac Pharmacy Tickets (Demo)', enterMrn:'Enter Medical Record Number (MRN)', issue:'Issue Ticket', ticketTitle:'Waiting Ticket', mrnLabel:'MRN:', done:(n)=>`Ticket issued: ${n}` }
+  };
+  let lang='ar';
+  const $ = (id)=>document.getElementById(id);
+  const el = { title:$('title'), btnAr:$('btnAr'), btnEn:$('btnEn'), lblMrn:$('lblMrn'), mrn:$('mrn'), btnIssue:$('btnIssue'), msg:$('msg'), ticket:$('ticket'), ticketTitle:$('ticketTitle'), ticketNumber:$('ticketNumber'), ticketMrn:$('ticketMrn'), mrnLabel:$('mrnLabel') };
+  function applyLang(){ const S=STR[lang]; document.title=S.title; $('title').textContent=S.title; el.lblMrn.textContent=S.enterMrn; el.btnIssue.textContent=S.issue; el.ticketTitle.textContent=S.ticketTitle; el.mrnLabel.textContent=S.mrnLabel; document.documentElement.lang=lang; document.documentElement.dir=(lang==='ar'?'rtl':'ltr'); el.btnAr.classList.toggle('active', lang==='ar'); el.btnEn.classList.toggle('active', lang==='en'); }
+  el.btnAr.onclick=()=>{lang='ar';applyLang();};
+  el.btnEn.onclick=()=>{lang='en';applyLang();};
+  applyLang();
+
+  const firebaseConfig = { apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw", authDomain:"q-matic-b7d77.firebaseapp.com", databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com", projectId:"q-matic-b7d77", storageBucket:"q-matic-b7d77.appspot.com", messagingSenderId:"908187704899", appId:"1:908187704899:web:b8bcf33cda90bafe81bef6" };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const ROOT='cardiac_demo';
+  const COUNTER = ROOT + '/kioskCounter';
+  const TICKETS = ROOT + '/tickets';
+  const NUMBERS = ROOT + '/numbers';
+
+  function cleanMRN(v){ return (v||'').replace(/[^0-9A-Za-z]/g,'').slice(0,20); }
+
+  db.ref(COUNTER).on('value', snap => { const v = snap.val() || 0; el.msg.textContent = v ? (lang==='ar' ? ('آخر تذكرة: '+v) : ('Last issued ticket: '+v)) : (lang==='ar'?'لا توجد تذاكر بعد':'No tickets yet'); });
+
+  el.btnIssue.onclick = async ()=>{
+    const mrnVal = cleanMRN(el.mrn.value);
+    try{
+      const n = await nextNumber();
+      const ticket = { mrn: mrnVal || null, createdAt: Date.now(), number: n, lang };
+      await firebase.database().ref(TICKETS+'/'+n).set(ticket);
+      await firebase.database().ref(NUMBERS+'/'+n).set('printed');
+      el.ticketNumber.textContent = n;
+      el.ticketMrn.textContent = mrnVal || (lang==='ar' ? 'غير متوفر' : 'N/A');
+      el.ticket.classList.remove('hidden');
+      el.msg.textContent = STR[lang].done(n);
+      setTimeout(()=>window.print(), 50);
+      el.mrn.value='';
+    }catch(e){
+      console.error(e);
+      el.msg.textContent = (lang==='ar'?'تعذر إصدار التذكرة':'Could not issue ticket');
+    }
+  };
+
+  function nextNumber(){
+    return new Promise((resolve,reject)=>{
+      const ref = firebase.database().ref(COUNTER);
+      ref.transaction(curr=>{
+        let v = (typeof curr==='number'?curr:0) + 1;
+        if(v>1000) v = 1;
+        return v;
+      }, (err, committed, snap)=>{
+        if(err || !committed){ reject(err||new Error('not committed')); return; }
+        resolve(snap.val());
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
