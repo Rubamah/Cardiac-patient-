@@ -1,184 +1,139 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>كيـوسك التذاكر - Cardiac</title>
-  <style>
-    :root{
-      --bg:#ffffff; --ink:#0f172a; --muted:#6b7280; --blue:#2563eb; --shadow:0 12px 34px rgba(0,0,0,.06);
-      --error:#dc2626; --panel:#ffffff; --line:#e5e7eb;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--ink);
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Noto Naskh Arabic UI", "Noto Kufi Arabic", Tahoma, sans-serif;
-      display:flex; min-height:100vh;
-    }
-    .wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:2vh 2vw;}
-    .card{width:min(980px,96vw); background:var(--panel); border-radius:20px; box-shadow:var(--shadow);
-      padding:3vh 3vw; text-align:center;}
-    .topbar{display:flex; justify-content:flex-end; align-items:center; gap:.5rem; margin-bottom:1rem;}
-    .langBtn{border:1px solid var(--line); background:#f8fafc; color:#0f172a; padding:.6rem .9rem;
-      border-radius:10px; cursor:pointer; font-weight:800;}
-    .langBtn.active{background:#0f172a; color:#fff; border-color:#0f172a;}
-    .welcome{font-weight:900; font-size:clamp(42px,9vw,92px); letter-spacing:.5px; margin:1vh 0 .4vh;}
-    .subtitle{font-size:clamp(18px,3.6vw,28px); color:#1f2937; margin:0 0 3vh;}
-    form{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
-      margin:0 auto; max-width:720px;}
-    input[type="text"]{
-      width:100%; padding:18px; border:2px solid #e5e7eb; border-radius:14px; outline:none;
-      font-size:clamp(22px,4.2vw,28px); text-align:center; background:#fff; color:#0f172a;
-    }
-    input[type="text"]:focus{border-color:#93c5fd; box-shadow:0 0 0 4px #dbeafe;}
-    .btn{border:0; border-radius:14px; padding:14px 22px; cursor:pointer; font-weight:900;
-      background:var(--blue); color:#fff; font-size:clamp(18px,3.8vw,22px);}
-    .error{color:var(--error); font-size:clamp(14px,3.2vw,16px); min-height:22px; margin-top:8px;}
-    .nextWrap{margin-top:14px; color:var(--muted); font-size:clamp(14px,3.2vw,16px)}
-    .nextNum{font-weight:800; color:#111;}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cardiac Kiosk</title>
 
-    /* Print Ticket */
+  <style>
+    :root{--blue:#2563eb;--ink:#0f172a;--muted:#6b7280;--panel:#fff;--line:#e5e7eb}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Noto Kufi Arabic",Tahoma,sans-serif;background:#f8fafc;color:var(--ink);min-height:100vh;display:flex}
+    .wrap{margin:auto;width:min(960px,96vw);background:var(--panel);border-radius:20px;box-shadow:0 12px 34px rgba(0,0,0,.06);padding:28px}
+    .top{display:flex;gap:8px;justify-content:flex-end}
+    .lang{border:1px solid var(--line);background:#f1f5f9;padding:.55rem .9rem;border-radius:10px;cursor:pointer;font-weight:800}
+    .lang.active{background:#111;color:#fff;border-color:#111}
+    h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0 6px;text-align:center}
+    .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:#1f2937;margin:0 0 20px}
+    form{display:flex;flex-direction:column;gap:14px;align-items:center}
+    input{width:100%;max-width:680px;padding:16px;border:2px solid var(--line);border-radius:14px;text-align:center;font-size:clamp(22px,4.2vw,28px)}
+    input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px #dbeafe}
+    .btn{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-weight:900;font-size:clamp(18px,3.8vw,22px);cursor:pointer}
+    .err{min-height:22px;color:#dc2626;text-align:center}
+    .next{margin-top:8px;text-align:center;color:var(--muted);font-size:clamp(14px,3.2vw,16px)}
+    .next b{color:#111}
+
+    /* print template */
     @media print{
-      @page{size:80mm auto; margin:0;}
-      html,body{background:#fff}
-      body>*{display:none !important;}
-      #ticket{display:block !important; width:100%; margin:0; padding:12px 10px; text-align:center;}
-      #ticket .paper{width:100%;}
-      #ticket .welcome{font-weight:900; font-size:18pt;}
-      #ticket .sub{font-size:12pt;}
-      #ticket .bigNum{font-weight:900; font-size:56pt; line-height:1;}
-      #ticket .mrn{font-size:18pt; margin:2px 0 2px;}
-      #ticket .ts{font-size:12pt; margin:4px 0;}
-      #ticket .thanks{font-size:16pt;}
-      #ticket .line{height:2px; background:#000; margin:6px 0;}
+      @page{size:80mm auto;margin:0}
+      body>*{display:none!important}
+      #ticket{display:block!important;width:100%;padding:12px 10px;text-align:center}
+      #tTitle{font-size:18pt;font-weight:900}
+      #tSub{font-size:12pt}
+      #tNum{font-size:56pt;font-weight:900;line-height:1}
+      #tMrn{font-size:18pt;margin:2px 0}
+      #tTs{font-size:12pt;margin:4px 0}
+      #tLine{height:2px;background:#000;margin:6px 0}
+      #tThanks{font-size:16pt}
     }
   </style>
+
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <div class="topbar">
-        <button id="btnAr" class="langBtn active">العربية</button>
-        <button id="btnEn" class="langBtn">English</button>
-      </div>
-      <div class="welcome" id="welcome">مرحباً</div>
-      <div class="subtitle" id="subtitle">يرجى إدخال رقم الملف الطبي (MRN)</div>
-      <form id="kioskForm">
-        <input id="mrn" type="text" inputmode="numeric" autocomplete="off" placeholder="MRN">
-        <button class="btn" type="submit" id="printBtn">طباعة التذكرة</button>
-      </form>
-      <div id="err" class="error"></div>
-      <div class="nextWrap" id="nextWrap">
-        <span id="nextLabel">الرقم التالي:</span> <span id="next" class="nextNum">1</span>
-      </div>
+    <div class="top">
+      <button id="ar" class="lang active">العربية</button>
+      <button id="en" class="lang">English</button>
     </div>
+    <h1 id="title">مرحباً</h1>
+    <p class="sub" id="subtitle">يرجى إدخال رقم الملف الطبي (MRN)</p>
+
+    <form id="frm">
+      <input id="mrn" inputmode="numeric" placeholder="MRN" autocomplete="off" />
+      <button class="btn" type="submit" id="printBtn">طباعة التذكرة</button>
+    </form>
+
+    <div class="err" id="err"></div>
+    <div class="next" id="nextWrap"><span id="nextLabel">الرقم التالي:</span> <b id="nextNum">1</b></div>
   </div>
 
-  <!-- Printable Ticket -->
+  <!-- PRINT CONTENT -->
   <div id="ticket" style="display:none">
-    <div class="paper">
-      <div class="welcome" id="tWelcome">Welcome</div>
-      <div class="sub" id="tSub">Your queuing number</div>
-      <div class="bigNum" id="tNum">1</div>
-      <div class="mrn" id="tMrn">6754</div>
-      <div class="ts" id="tTs">2023-08-07 18:30</div>
-      <div class="line"></div>
-      <div class="thanks" id="tThanks">Thank you for waiting</div>
-    </div>
+    <div id="tTitle">Welcome</div>
+    <div id="tSub">Your queuing number</div>
+    <div id="tNum">1</div>
+    <div id="tMrn">6754</div>
+    <div id="tTs">2023-08-07 18:30</div>
+    <div id="tLine"></div>
+    <div id="tThanks">Thank you for waiting</div>
   </div>
 
 <script>
 (function(){
   const STR={
-    ar:{welcome:"مرحباً",subtitle:"يرجى إدخال رقم الملف الطبي (MRN)",placeholder:"MRN",print:"طباعة التذكرة",nextLabel:"الرقم التالي:",err:"الرجاء إدخال رقم ملف صالح",
-        tWelcome:"مرحباً", tSub:"رقم دورك", tThanks:"شكراً لانتظارك"},
-    en:{welcome:"Welcome",subtitle:"Please write your MRN",placeholder:"MRN",print:"Print Ticket",nextLabel:"Next number:",err:"Please enter valid MRN",
-        tWelcome:"Welcome", tSub:"Your queuing number", tThanks:"Thank you for waiting"}
+    ar:{title:"مرحباً",sub:"يرجى إدخال رقم الملف الطبي (MRN)",btn:"طباعة التذكرة",next:"الرقم التالي:",err:"الرجاء إدخال رقم ملف صالح",
+        tTitle:"مرحباً",tSub:"رقم دورك",tThanks:"شكراً لانتظارك"},
+    en:{title:"Welcome",sub:"Please write your MRN",btn:"Print Ticket",next:"Next number:",err:"Please enter valid MRN",
+        tTitle:"Welcome",tSub:"Your queuing number",tThanks:"Thank you for waiting"}
   };
   let lang=localStorage.getItem("kiosk_lang")||"ar";
   const $=id=>document.getElementById(id);
-  const el={btnAr:$("btnAr"),btnEn:$("btnEn"),welcome:$("welcome"),subtitle:$("subtitle"),mrn:$("mrn"),printBtn:$("printBtn"),err:$("err"),next:$("next"),nextLabel:$("nextLabel")};
-  const tl={tWelcome:$("tWelcome"),tSub:$("tSub"),tNum:$("tNum"),tMrn:$("tMrn"),tTs:$("tTs"),tThanks:$("tThanks")};
+  const el={title:$("title"),subtitle:$("subtitle"),mrn:$("mrn"),btn:$("printBtn"),err:$("err"),nextLabel:$("nextLabel"),nextNum:$("nextNum")};
+  const pt={tTitle:$("tTitle"),tSub:$("tSub"),tNum:$("tNum"),tMrn:$("tMrn"),tTs:$("tTs"),tThanks:$("tThanks")};
 
-  function applyLang(){
-    const S=STR[lang];
-    document.documentElement.lang=lang;
-    document.documentElement.dir=(lang==="ar")?"rtl":"ltr";
-    el.btnAr.classList.toggle("active",lang==="ar");
-    el.btnEn.classList.toggle("active",lang==="en");
-    el.welcome.textContent=S.welcome;
-    el.subtitle.textContent=S.subtitle;
-    el.mrn.placeholder=S.placeholder;
-    el.printBtn.textContent=S.print;
-    el.nextLabel.textContent=S.nextLabel;
-    tl.tWelcome.textContent=S.tWelcome;
-    tl.tSub.textContent=S.tSub;
-    tl.tThanks.textContent=S.tThanks;
+  function setLang(l){
+    lang=l; localStorage.setItem("kiosk_lang",l);
+    document.documentElement.lang=l; document.documentElement.dir=(l==="ar")?"rtl":"ltr";
+    $("ar").classList.toggle("active",l==="ar"); $("en").classList.toggle("active",l==="en");
+    const S=STR[l]; el.title.textContent=S.title; el.subtitle.textContent=S.sub; el.btn.textContent=S.btn; el.nextLabel.textContent=S.next;
+    pt.tTitle.textContent=S.tTitle; pt.tSub.textContent=S.tSub; pt.tThanks.textContent=S.tThanks;
   }
-  $("btnAr").onclick=()=>{lang="ar";localStorage.setItem("kiosk_lang",lang);applyLang();};
-  $("btnEn").onclick=()=>{lang="en";localStorage.setItem("kiosk_lang",lang);applyLang();};
-  applyLang();
+  $("ar").onclick=()=>setLang("ar"); $("en").onclick=()=>setLang("en"); setLang(lang);
 
-  // Firebase config
-  const firebaseConfig={
-    apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
-    authDomain:"q-matic-b7d77.firebaseapp.com",
-    databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",
-    projectId:"q-matic-b7d77",
-    storageBucket:"q-matic-b7d77.appspot.com",
-    messagingSenderId:"908187704899",
-    appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"
-  };
-  firebase.initializeApp(firebaseConfig);
+  // Firebase
+  const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
+  firebase.initializeApp(cfg);
   const db=firebase.database();
-  const ROOT="cardiac"; // ✅ MATCHES OPERATOR
+  const ROOT="cardiac";
 
+  // show next number (counter+1)
   db.ref(ROOT+"/counter").on("value",s=>{
-    const v=s.val()||0;
-    el.next.textContent=(v%1000)+1;
+    const v=s.val()||0; el.nextNum.textContent=(v%1000)+1;
   });
 
-  function validMRN(v){return /^[0-9]{4,}$/.test(v);}
-  function showError(m){el.err.textContent=m||"";}
+  function validMRN(v){return /^[0-9]{4,}$/.test(v);} // >=4 digits, digits only
+  function showErr(m){el.err.textContent=m||"";}
+
   function nextNumber(){
     return new Promise((res,rej)=>{
       const r=db.ref(ROOT+"/counter");
       r.transaction(c=>{
-        let v=(typeof c==="number"?c:0)+1;
-        if(v>1000) v=1;
-        return v;
-      },(e,ok,s)=>{
-        if(e||!ok){rej(e||new Error("fail"));return;}
-        res(s.val());
-      });
+        let v=(typeof c==="number"?c:0)+1; if(v>1000) v=1; return v;
+      },(e,ok,s)=>{ if(e||!ok) rej(e||new Error("txn")); else res(s.val()); });
     });
   }
 
-  $("kioskForm").addEventListener("submit",async e=>{
+  $("frm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     const mrn=(el.mrn.value||"").trim();
-    if(!validMRN(mrn)){showError(STR[lang].err); el.mrn.focus(); return;}
-    showError("");
+    if(!validMRN(mrn)){ showErr(STR[lang].err); el.mrn.focus(); return; }
+    showErr("");
+
     try{
-      const n=await nextNumber();
+      const n = await nextNumber();          // 1..1000
       await db.ref(`${ROOT}/mrn/${n}`).set(mrn);
-      await db.ref(`${ROOT}/printed/${n}`).set(true); // ✅ TURN GREEN
-      await db.ref(`${ROOT}/latest`).set({number:n,ts:Date.now()});
+      await db.ref(`${ROOT}/printed/${n}`).set(true);   // ✅ turn grid green
+      // NOTE: we DO NOT set /latest here, so operator “Now Serving” doesn't change
+      // await db.ref(`${ROOT}/latest`).set({number:n,ts:Date.now(),mrn});  <-- removed
 
-      // Fill print template
-      tl.tNum.textContent=n;
-      tl.tMrn.textContent=mrn;
-      tl.tTs.textContent=new Date().toLocaleString(lang==="ar"?"ar-SA":"en-US");
-
+      // fill print ticket and print
+      pt.tNum.textContent=n; pt.tMrn.textContent=mrn;
+      pt.tTs.textContent=new Date().toLocaleString(lang==="ar"?"ar-SA":"en-US");
       setTimeout(()=>window.print(),50);
-      setTimeout(()=>{el.mrn.value=""; el.mrn.focus();},200);
-    }catch(err){
-      console.error(err);
-      showError(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket");
-    }
+      setTimeout(()=>{ el.mrn.value=""; el.mrn.focus(); }, 200);
+    }catch(err){ console.error(err); showErr(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket"); }
   });
 
   window.onload=()=>el.mrn.focus();
