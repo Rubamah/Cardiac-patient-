@@ -8,21 +8,26 @@
 <style>
   :root{
     --blue:#2563eb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
-    --bg:#f6f7fb; --card:#fff;
+    --bg:#f6f7fb;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic","Geeza Pro","Tahoma",sans-serif;color:var(--ink)}
-  .wrap{margin:auto;width:min(960px,96vw);min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:24px}
-  h1{font-size:clamp(40px,8.5vw,90px);text-align:center;margin:10px 0 0}
+  .wrap{margin:auto;min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:24px;max-width:960px}
   .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:var(--muted)}
+  h1{font-size:clamp(40px,8.5vw,90px);text-align:center;margin:10px 0 0}
   form{display:flex;flex-direction:column;gap:14px;align-items:center}
   label{font-weight:700}
-  input{width:100%;max-width:680px;padding:16px 18px;font-size:22px;border:2px solid var(--line);border-radius:14px;letter-spacing:1px}
+  input{
+    width:100%;max-width:680px;padding:16px 18px;font-size:22px;border:2px solid var(--line);
+    border-radius:14px;letter-spacing:1px;text-align:center; /* <-- بالنص */
+  }
+  input::placeholder{color:#9aa3b2;opacity:.9;text-align:center}
   input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px #dbeafe}
   .btn{background:var(--blue);color:#fff;font-weight:800;border:0;border-radius:14px;padding:14px 26px;font-size:22px;cursor:pointer}
   .next{margin-top:8px;text-align:center;color:var(--muted)}
   .next b{color:#111}
   .err{min-height:22px;color:#dc2626;text-align:center}
+
   /* قالب الطباعة */
   @media print{
     @page{ size:80mm 90mm; margin:0 }
@@ -50,9 +55,9 @@
     <h1>مرحبًا</h1>
     <div class="sub">فضلًا اكتب رقم الملف (MRN)</div>
 
-    <form id="f">
+    <form id="f" autocomplete="off">
       <label for="mrn" class="sub" style="margin-top:6px;">رقم الملف (MRN)</label>
-      <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
+      <input id="mrn" inputmode="numeric" placeholder="MRN" />
       <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
       <div class="next">الرقم التالي: <b><span id="nextNum">—</span></b></div>
       <div class="err" id="err"></div>
@@ -74,142 +79,102 @@
 
 <script>
 (function(){
-  // ========= الإعدادات =========
+  // ===== Firebase =====
   const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
   const db=firebase.database();
-  const ROOT = "cardiac_demo"; // ✳️ غيّرها إذا كان الجذر مختلفًا
-  const MIN = 1, MAX = 1000;
+  const ROOT="cardiac_demo"; // غيّرها إذا أردت
 
-  const f = document.getElementById('f');
-  const mrnInput = document.getElementById('mrn');
-  const err = document.getElementById('err');
-  const nextNumEl = document.getElementById('nextNum');
+  const f=document.getElementById('f');
+  const mrnInput=document.getElementById('mrn');
+  const err=document.getElementById('err');
+  const nextNumEl=document.getElementById('nextNum');
 
-  // نص عربي سليم لعدد المنتظرين
+  // أرقام عربية للنص
+  const dMap=["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+  const toAr=n=>(""+n).replace(/\d/g,d=>dMap[+d]);
+
   function waitingArabic(n){
-    if(n <= 0) return "لا أحد أمامك في الانتظار";
-    if(n === 1) return "أمامك ١ شخص في الانتظار";
-    if(n === 2) return "أمامك شخصان في الانتظار";
-    // 3..10
-    const map = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
-    const toArabicDigits = s => (""+s).replace(/\d/g,d=>map[+d]);
-    return `أمامك ${toArabicDigits(n)} أشخاص في الانتظار`;
+    if(n<=0) return "لا أحد أمامك في الانتظار";
+    if(n===1) return "أمامك ١ شخص في الانتظار";
+    if(n===2) return "أمامك شخصان في الانتظار";
+    return `أمامك ${toAr(n)} أشخاص في الانتظار`;
   }
 
-  // الحصول على الرقم التالي (1..1000، مع إعادة البدء)
+  function validMRN(v){return /^[0-9]{3,}$/.test((v||"").trim());}
+
   async function getNextNumber(){
-    const snap = await db.ref(`${ROOT}/printed`).get();
-    const printed = snap.val() || {};
-    // ابحث عن أكبر رقم مطبوع ثم +1 (وإلا البداية من 1)
-    let maxPrinted = 0;
-    for(const k in printed){
-      const n = parseInt(k,10);
-      if(!isNaN(n) && n > maxPrinted) maxPrinted = n;
-    }
-    let next = maxPrinted ? maxPrinted + 1 : MIN;
-    if(next > MAX) next = MIN;
+    const snap=await db.ref(`${ROOT}/printed`).get();
+    const printed=snap.val()||{};
+    let max=0;
+    for(const k in printed){const n=parseInt(k,10); if(!isNaN(n)&&n>max) max=n;}
+    let next=max?max+1:1;
+    if(next>1000) next=1;
     return next;
   }
 
-  // عرض الرقم التالي أسفل الزر
   async function refreshNext(){
-    const n = await getNextNumber();
-    nextNumEl.textContent = n;
+    const n=await getNextNumber();
+    nextNumEl.textContent=n;
   }
 
-  // حساب عدد المنتظرين قبل رقم معيّن:
   async function countWaitingBefore(current){
-    // printed: true لمن طُبع
-    // served: true لمن خُدم
-    const [pSnap, sSnap] = await Promise.all([
+    const [pSnap,sSnap]=await Promise.all([
       db.ref(`${ROOT}/printed`).get(),
       db.ref(`${ROOT}/served`).get()
     ]);
-    const printed = pSnap.val() || {};
-    const served  = sSnap.val()  || {};
-    let count = 0;
+    const printed=pSnap.val()||{};
+    const served=sSnap.val()||{};
+    let c=0;
     for(const k in printed){
-      const n = parseInt(k,10);
-      if(!isNaN(n) && n < current && !served[n]) count++;
+      const n=parseInt(k,10);
+      if(!isNaN(n)&&n<current&&!served[n]) c++;
     }
-    return count;
+    return c;
   }
 
-  // طباعة التذكرة في نافذة/وثيقة منفصلة بدون حواف المتصفّح قدر الإمكان
-  function printTicketInPopup(html){
-    const w = window.open('', '_blank', 'width=480,height=800');
-    w.document.open();
-    w.document.write(`
-      <html lang="ar" dir="rtl">
-      <head>
-        <meta charset="utf-8">
-        <title>Print</title>
-        <style>
-          @page{ size:80mm 90mm; margin:0 }
-          body{ margin:0 }
-        </style>
-      </head>
-      <body>${html}</body>
-      </html>
-    `);
-    w.document.close();
-    // انتظر تهيئة الخطوط ثم اطبع
-    setTimeout(()=>{ w.focus(); w.print(); setTimeout(()=>w.close(), 150); }, 150);
+  // طباعة من نفس الصفحة لتجنّب حظر النوافذ
+  function doPrint(){
+    // مهلة قصيرة تسمح للمحرّك بتطبيق @media print
+    setTimeout(()=>{ window.print(); }, 50);
   }
 
-  // التحقق من الـ MRN (أرقام فقط وطول ≥ 3)
-  function validMRN(v){
-    return /^[0-9]{3,}$/.test((v||"").trim());
-  }
-
-  // عند الإرسال
   f.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    err.textContent = '';
-    const mrn = mrnInput.value.trim();
-    if(!validMRN(mrn)){
-      err.textContent = "فضلاً أدخل MRN صحيحًا.";
-      return;
-    }
+    err.textContent='';
+    const mrn=mrnInput.value.trim();
+    if(!validMRN(mrn)){ err.textContent="فضلاً أدخل MRN صحيحًا."; return; }
 
-    // رقم التذكرة القادم
-    const num = await getNextNumber();
+    const num=await getNextNumber();
+    const waiting=await countWaitingBefore(num);
 
-    // احسب عدد المنتظرين قبله (المطبوعين الأصغر غير المخدومين)
-    const waiting = await countWaitingBefore(num);
-
-    // سجّل على فيربيز: مطبوع + MRN
+    // سجّل مطبوع وMRN
     await Promise.all([
       db.ref(`${ROOT}/printed/${num}`).set(true),
       db.ref(`${ROOT}/mrn/${num}`).set(mrn),
-      db.ref(`${ROOT}/latestPrinted`).set({ number:num, mrn, ts:Date.now() })
+      db.ref(`${ROOT}/latestPrinted`).set({number:num,mrn,ts:Date.now()})
     ]);
 
-    // جهّز قالب التذكرة
-    const t = document.getElementById('ticket').cloneNode(true);
-    t.style.display = 'block';
-    t.querySelector('#tNum').textContent = num;
-    t.querySelector('#tMrn').textContent = `رقم الملف: ${mrn}`;
-    t.querySelector('#tWait').textContent = waitingArabic(waiting);
+    // جهّز محتوى التذكرة
+    document.getElementById('tNum').textContent=num;
+    document.getElementById('tMrn').textContent=`رقم الملف: ${mrn}`;
+    document.getElementById('tWait').textContent=waitingArabic(waiting);
+    const now=new Date();
+    const dateStr=now.toLocaleDateString('en-US');
+    const timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+    document.getElementById('tTs').textContent=`${timeStr} , ${dateStr}`;
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US'); // Gregorian (MM/DD/YYYY)
-    const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',hour12:true});
-    t.querySelector('#tTs').textContent = `${timeStr} , ${dateStr}`;
+    // اطبع
+    doPrint();
 
-    // اطبع في نافذة منبثقة (أكثر ثباتًا مع درايفرات التذاكر)
-    printTicketInPopup(t.outerHTML);
-
-    // صفّر الحقل وحدث "الرقم التالي"
-    mrnInput.value = '';
+    // صفّر وحدث التالي
+    mrnInput.value='';
     refreshNext();
   });
 
-  // تهيئة أولية
+  // تهيئة
+  mrnInput.focus();
   refreshNext();
-
-  // تحديث مباشر للرقم التالي لو طُبعت أرقام من أجهزة أخرى
   db.ref(`${ROOT}/printed`).on('value', refreshNext);
 })();
 </script>
