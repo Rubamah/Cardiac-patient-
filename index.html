@@ -6,61 +6,40 @@
 <title>Cardiac Kiosk</title>
 
 <style>
-  :root{
-    --blue:#2563eb; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb;
-    --panel:#ffffff; --bg:#f5f7fb;
-  }
+  :root{--blue:#2563eb;--ink:#0f172a;--muted:#64748b;--line:#e5e7eb;--panel:#fff;--bg:#f5f7fb}
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0; background:var(--bg);
-    font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    color:var(--ink); display:flex; align-items:center; justify-content:center;
-  }
-  .wrap{width:min(960px,92vw); padding:24px 20px}
-  .card{
-    background:var(--panel); border:1px solid var(--line); border-radius:20px;
-    padding:28px 22px; box-shadow:0 10px 28px rgba(2,8,23,.06); text-align:center;
-  }
-  h1{margin:10px 0 6px; font-size:clamp(42px,7.2vw,68px); font-weight:900}
-  .sub{margin:0 0 20px; color:var(--muted); font-size:clamp(18px,3.4vw,26px)}
-  form{display:flex; flex-direction:column; gap:14px; align-items:center}
-  label{width:100%; max-width:640px; color:var(--muted); font-weight:700; text-align:center; font-size:20px}
-  .row{width:100%; max-width:640px}
-  input{
-    width:100%; padding:16px 14px; border-radius:14px; border:2px solid #c7d2fe;
-    font-size:20px; text-align:center; outline:none
-  }
-  input:focus{border-color:#93c5fd}
-  .btn{
-    background:var(--blue); color:#fff; border:0; border-radius:14px;
-    padding:14px 22px; font-weight:900; font-size:22px; cursor:pointer;
-    width:100%; max-width:640px
-  }
-  .hint{margin-top:10px; color:#64748b; font-size:15px; text-align:center; opacity:.9}
-  .nextLabel{margin-top:8px; color:var(--muted); font-weight:700; text-align:center; font-size:20px}
-  .err{min-height:22px; color:#dc2626; font-weight:700; text-align:center; margin-top:4px}
+  body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center}
+  .wrap{width:min(960px,92vw);padding:24px 20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px;box-shadow:0 10px 28px rgba(2,8,23,.06);text-align:center}
+  h1{margin:10px 0 6px;font-size:clamp(42px,7.2vw,68px);font-weight:900}
+  .sub{margin:0 0 20px;color:var(--muted);font-size:clamp(18px,3.4vw,26px)}
+  form{display:flex;flex-direction:column;gap:14px;align-items:center}
+  label{width:100%;max-width:640px;color:var(--muted);font-weight:700;text-align:center;font-size:20px}
+  .row{width:100%;max-width:640px}
+  input{width:100%;padding:16px 14px;border-radius:14px;border:2px solid #c7d2fe;font-size:20px;text-align:center}
+  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.35)}
+  .btn{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-weight:900;font-size:22px;cursor:pointer;width:100%;max-width:640px}
+  .nextLabel{margin-top:8px;color:var(--muted);font-weight:700;text-align:center;font-size:20px}
+  .hint{margin-top:10px;color:#64748b;font-size:15px;text-align:center;opacity:.9}
+  .err{min-height:22px;color:#dc2626;font-weight:700;text-align:center;margin-top:4px}
 
-  /* --------- PRINT: English-only for Epson TM-T20 (80mm x 90mm) ---------- */
+  /* PRINT: Arabic body with English title; Epson TM-T20 80×90mm */
   @media print{
-    @page{ size:80mm 90mm; margin:0 } /* fixed 90mm height */
+    @page{ size:80mm 90mm; margin:0 }
     body>*{ display:none !important }
 
     #ticket{
-      display:block !important;
-      width:100%;
-      height:90mm;
-      padding:6mm 6mm;
-      text-align:center;
-      font-family:"Consolas","Courier New",monospace;
-      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+      display:block !important; width:100%; height:90mm; padding:6mm 6mm; text-align:center;
+      font-family:"Consolas","Courier New",monospace; -webkit-print-color-adjust:exact; print-color-adjust:exact; direction:rtl;
     }
-    #tHead   { font-size:12pt; font-weight:bold; margin:0 0 4px }
-    #tTitle  { font-size:18pt; font-weight:900; margin:3mm 0 3mm; text-align:center; }
-    #tNum    { font-size:50pt; font-weight:900; line-height:1; margin:6px 0 }
-    #tMrn    { font-size:11pt; margin:2mm 0 }
+    #tHead   { font-size:12pt; font-weight:bold; margin:0 0 4px; direction:ltr } /* English title */
+    #tHello  { font-size:14pt; font-weight:900; margin:2mm 0 1mm }
+    #tLabel  { font-size:10pt; margin:2mm 0 0 }   /* "رقم الانتظار — رقمك هو" */
+    #tNum    { font-size:50pt; font-weight:900; line-height:1; margin:2mm 0 2mm }
+    #tMrn    { font-size:11pt; margin:1mm 0 }
     #tWait   { font-size:10pt; margin:2mm 0 }
-    #tTs     { font-size:10pt; margin:2mm 0 }
+    #tTs     { font-size:10pt; margin:1.5mm 0 }
     #tThanks { font-size:12pt; margin-top:3mm }
   }
 </style>
@@ -81,7 +60,7 @@
           <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
         </div>
 
-        <button class="btn" id="btnPrint" type="submit">طباعة التذكرة / Print Ticket</button>
+        <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
 
         <div class="nextLabel">الرقم التالي: <span id="nextNum">-</span></div>
         <div class="hint">سيتم طباعة التذكرة تلقائيًا، الرجاء الانتظار.</div>
@@ -90,85 +69,101 @@
     </div>
   </div>
 
-  <!-- PRINT CONTENT (English-only) -->
+  <!-- PRINT CONTENT -->
   <div id="ticket" style="display:none">
-    <div id="tHead">Cardiac Pharmacy Ticket</div>
-    <div id="tTitle">Queue Number</div>
+    <div id="tHead">Cardiac Pharmacy Ticket</div>  <!-- English title -->
+    <div id="tHello">مرحبًا</div>
+    <div id="tLabel">رقم الانتظار — رقمك هو</div>
     <div id="tNum">-</div>
-    <div id="tMrn"></div>
     <div id="tWait"></div>
+    <div id="tMrn"></div>
     <div id="tTs"></div>
-    <div id="tThanks">Thank you for waiting</div>
+    <div id="tThanks">شكرًا لانتظارك</div>
   </div>
 
 <script>
 (function(){
-  // Firebase config
-  const cfg={
-    apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
-    authDomain:"q-matic-b7d77.firebaseapp.com",
-    databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",
-    projectId:"q-matic-b7d77",
-    storageBucket:"q-matic-b7d77.appspot.com",
-    messagingSenderId:"908187704899",
-    appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"
-  };
+  // ===== Firebase =====
+  const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
   const db=firebase.database();
-  const ROOT="cardiac_demo";   // ← غيّريها إلى "cardiac" للنسخة النهائية
+  const ROOT="cardiac_demo"; // بدّليها إلى "cardiac" إذا تبين الإنتاج
 
-  const nextEl = document.getElementById('nextNum');
-  const errEl  = document.getElementById('err');
-  const mrnEl  = document.getElementById('mrn');
+  // UI refs
+  const mrnEl=document.getElementById('mrn');
+  const errEl=document.getElementById('err');
+  const nextEl=document.getElementById('nextNum');
 
-  db.ref(`${ROOT}/next`).on('value', s=>{
+  // Ticket refs
+  const tNum=document.getElementById('tNum');
+  const tMrn=document.getElementById('tMrn');
+  const tWait=document.getElementById('tWait');
+  const tTs=document.getElementById('tTs');
+
+  // Show next number live
+  const nextRef = db.ref(`${ROOT}/next`);
+  nextRef.on('value', s=>{
     const n = s.val() || 1;
     nextEl.textContent = n;
   });
 
+  // Count waiting (printed & not served & not no-show)
   async function getWaitingCount(){
-    const p = (await db.ref(`${ROOT}/printed`).get()).val() || {};
-    const sv = (await db.ref(`${ROOT}/served`).get()).val() || {};
-    let count = 0;
-    for(const k in p){ if(p[k] && !sv[k]) count++; }
-    return count;
+    const [pSnap,sSnap,nSnap] = await Promise.all([
+      db.ref(`${ROOT}/printed`).get(),
+      db.ref(`${ROOT}/served`).get(),
+      db.ref(`${ROOT}/noshow`).get(),
+    ]);
+    const printed=pSnap.val()||{}, served=sSnap.val()||{}, noshow=nSnap.val()||{};
+    let c=0; for(const k in printed){ if(printed[k] && !served[k] && !noshow[k]) c++; }
+    return c;
   }
 
-  function validMrn(v){
-    if(!v) return true;
-    return /^\d{4,}$/.test(v.trim());
+  // Arabic morphology for waiting text
+  function arabicWaitingText(count){
+    if (count === 0) return "أمامك ٠ شخص في الانتظار";
+    if (count === 1) return "أمامك ١ شخص في الانتظار";
+    if (count === 2) return "أمامك شخصان في الانتظار";
+    if (count >= 3 && count <= 9) return `أمامك ${count} أشخاص في الانتظار`;
+    return `أمامك ${count} شخصًا في الانتظار`;
   }
 
+  // MRN: digits only (≥4 if provided)
+  mrnEl.addEventListener('input',()=>{
+    const digits = mrnEl.value.replace(/\D+/g,'');
+    if(digits!==mrnEl.value) mrnEl.value = digits;
+  });
+  const validMrn = v => !v || /^\d{4,}$/.test(v);
+
+  // Submit → update DB → print
   document.getElementById('frm').addEventListener('submit', async (e)=>{
     e.preventDefault();
-    errEl.textContent = "";
+    errEl.textContent="";
 
-    const mrnRaw = (mrnEl.value || "").trim();
-    if(!validMrn(mrnRaw)){
-      errEl.textContent = "فضلاً أدخل رقم الملف بشكل صحيح.";
-      mrnEl.focus(); return;
-    }
+    const mrn = (mrnEl.value||"").trim();
+    if(!validMrn(mrn)){ errEl.textContent="فضلاً أدخل رقم الملف بشكل صحيح."; mrnEl.focus(); return; }
 
-    const snap = await db.ref(`${ROOT}/next`).get();
-    let n = snap.exists() ? snap.val() : 1;
+    const snap = await nextRef.get();
+    const n = snap.exists() ? snap.val() : 1;
 
-    document.getElementById('tNum').textContent  = n;
-    document.getElementById('tMrn').textContent  = mrnRaw ? `MRN: ${mrnRaw}` : "";
-    document.getElementById('tWait').textContent = `No. of people waiting: ${await getWaitingCount()}`;
-    document.getElementById('tTs').textContent   = new Date().toLocaleString('en-GB', { hour12:false });
-
-    const updates = {};
+    // Write DB
+    const updates={};
     updates[`${ROOT}/printed/${n}`] = true;
-    if(mrnRaw) updates[`${ROOT}/mrn/${n}`] = mrnRaw;
-    const nextVal = (n >= 1000) ? 1 : n+1;
-    updates[`${ROOT}/next`] = nextVal;
+    if(mrn) updates[`${ROOT}/mrn/${n}`] = mrn;
+    updates[`${ROOT}/next`] = (n>=1000)?1:n+1;
     await db.ref().update(updates);
 
-    setTimeout(()=>window.print(), 40);
+    // Compose ticket
+    tNum.textContent = n;
+    tMrn.textContent = mrn ? `رقم الملف: ${mrn}` : "";
+    tWait.textContent = arabicWaitingText(await getWaitingCount());
+    tTs.textContent = new Date().toLocaleString('en-US', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
 
-    mrnEl.value = "";
-    mrnEl.blur();
-    setTimeout(()=>mrnEl.focus(), 300);
+    // Trigger print (Edge kiosk prints silently with --kiosk-printing)
+    window.print();
+
+    // Reset for next patient
+    mrnEl.value=""; setTimeout(()=>mrnEl.focus(), 200);
   });
 })();
 </script>
