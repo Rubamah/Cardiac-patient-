@@ -23,19 +23,28 @@
     .next{margin-top:8px;text-align:center;color:var(--muted);font-size:clamp(14px,3.2vw,16px)}
     .next b{color:#111}
 
-    /* print template */
-    @media print{
-      @page{size:80mm auto;margin:0}
-      body>*{display:none!important}
-      #ticket{display:block!important;width:100%;padding:12px 10px;text-align:center}
-      #tTitle{font-size:18pt;font-weight:900}
-      #tSub{font-size:12pt}
-      #tNum{font-size:56pt;font-weight:900;line-height:1}
-      #tMrn{font-size:18pt;margin:2px 0}
-      #tTs{font-size:12pt;margin:4px 0}
-      #tLine{height:2px;background:#000;margin:6px 0}
-      #tThanks{font-size:16pt}
-    }
+/* Epson TM-T20II print template */
+@media print {
+  @page {
+    size: 80mm 150mm;    /* عرض رول Epson مع ارتفاع تلقائي */
+    margin: 0;
+  }
+  body * { display: none !important; }
+  #ticket {
+    display: block !important;
+    width: 72mm;
+    margin: 0 auto;
+    padding: 6mm 0;
+    text-align: center;
+  }
+  #tTitle { font-size: 18pt; font-weight: 900; }
+  #tSub { font-size: 12pt; }
+  #tNum { font-size: 60pt; font-weight: 900; line-height: 1; }
+  #tMrn { font-size: 18pt; margin: 2mm 0; }
+  #tTs { font-size: 12pt; margin: 3mm 0; }
+  #tLine { height: 2px; background: #000; margin: 5mm 0; }
+  #tThanks { font-size: 16pt; }
+}
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
