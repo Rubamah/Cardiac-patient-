@@ -54,20 +54,66 @@
       <h1>مرحبًا</h1>
 
       <form id="frm">
-        <div class="row">
-          <label for="mrn">فضلًا اكتب رقم الملف (MRN)</label>
-          <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
-        </div>
-
-        <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
-
-        <div class="nextLabel">الرقم التالي: <span id="nextNum">-</span></div>
-        <div class="hint">سيتم طباعة التذكرة تلقائيًا، الرجاء الانتظار.</div>
-        <div class="err" id="err"></div>
-      </form>
-    </div>
+        <form id="frm" class="form">
+  <label for="mrn">رقم الملف (MRN)</label>
+  <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
+  <button id="btn" class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
+  <div class="next">الرقم التالي: <span id="nextNum"></span></div>
+  <div class="err" id="err" aria-live="polite"></div>
+</form>
   </div>
 
+    <script>
+// تحويل الأرقام العربية إلى لاتينية
+function normalizeDigits(str) {
+  const ar = "٠١٢٣٤٥٦٧٨٩";
+  const fa = "۰۱۲۳۴۵۶۷۸۹";
+  return String(str).replace(/[٠-٩۰-۹]/g, d => {
+    const iAr = ar.indexOf(d);
+    if (iAr > -1) return String(iAr);
+    const iFa = fa.indexOf(d);
+    if (iFa > -1) return String(iFa);
+    return d;
+  });
+}
+
+// تحقق داخلي: أرقام فقط وطول ≥ 4 بدون تفاصيل
+function isValidMRN(raw) {
+  const v = normalizeDigits(raw).trim();
+  return /^\d{4,}$/.test(v);
+}
+
+// عناصر الصفحة
+const frm = document.getElementById('frm');
+const mrnInput = document.getElementById('mrn');
+const btn = document.getElementById('btn');
+const err = document.getElementById('err');
+
+// تحديث الزر بصمت
+function updateBtnState() {
+  const ok = isValidMRN(mrnInput.value);
+  btn.disabled = !ok;
+  err.textContent = "";
+}
+updateBtnState();
+
+// تصفية الإدخال
+mrnInput.addEventListener('input', () => {
+  const normalized = normalizeDigits(mrnInput.value).replace(/\D+/g, '');
+  if (mrnInput.value !== normalized) mrnInput.value = normalized;
+  updateBtnState();
+});
+
+// منع الإرسال بدون رقم صحيح
+frm.addEventListener('submit', (e) => {
+  const ok = isValidMRN(mrnInput.value);
+  if (!ok) {
+    e.preventDefault();
+    err.textContent = "فضلاً أدخل رقم ملف صحيح.";
+    mrnInput.focus();
+  }
+});
+</script>
   <!-- PRINT CONTENT -->
   <div id="ticket" style="display:none">
     <div id="tHead">Cardiac Pharmacy Ticket</div>  <!-- English title -->
