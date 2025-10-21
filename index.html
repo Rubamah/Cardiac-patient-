@@ -153,64 +153,63 @@ frm.addEventListener('submit', (e) => {
   });
 
   // Count waiting (printed & not served & not no-show)
-  async function getWaitingCount(){
-    const [pSnap,sSnap,nSnap] = await Promise.all([
-      db.ref(`${ROOT}/printed`).get(),
-      db.ref(`${ROOT}/served`).get(),
-      db.ref(`${ROOT}/noshow`).get(),
-    ]);
-    const printed=pSnap.val()||{}, served=sSnap.val()||{}, noshow=nSnap.val()||{};
-    let c=0; for(const k in printed){ if(printed[k] && !served[k] && !noshow[k]) c++; }
-    return c;
+  
+async function calcWaitingFor(current) {
+  // نحضر الحالات الحالية
+  const [printedSnap, servedSnap] = await Promise.all([
+    db.ref(`${ROOT}/printed`).get(),
+    db.ref(`${ROOT}/served`).get()
+  ]);
+  const printed = printedSnap.val() || {};
+  const served  = servedSnap.val()  || {};
+
+  // العدّ: مطبوع وأصغر من رقم التذكرة الحالية ولم يُخدم
+  let count = 0;
+  for (const k of Object.keys(printed)) {
+    const n = parseInt(k, 10);
+    if (Number.isInteger(n) && n < current && printed[k] && !served[k]) {
+      count++;
+    }
   }
+  return count;
+}
 
-  // Arabic morphology for waiting text
-  function arabicWaitingText(count){
-    if (count === 0) return "أمامك ٠ شخص في الانتظار";
-    if (count === 1) return "أمامك ١ شخص في الانتظار";
-    if (count === 2) return "أمامك شخصان في الانتظار";
-    if (count >= 3 && count <= 9) return `أمامك ${count} أشخاص في الانتظار`;
-    return `أمامك ${count} شخصًا في الانتظار`;
-  }
+// تصريف عربي للجملة
+function waitingTextAr(n){
+  if (n === 0) return "لا يوجد أحد أمامك في الانتظار";
+  if (n === 1) return "أمامك شخص واحد في الانتظار";
+  if (n === 2) return "أمامك شخصان في الانتظار";
+  if (n >= 3 && n <= 10) return `أمامك ${n} أشخاص في الانتظار`;
+  return `أمامك ${n} شخصًا في الانتظار`;
+}
 
-  // MRN: digits only (≥4 if provided)
-  mrnEl.addEventListener('input',()=>{
-    const digits = mrnEl.value.replace(/\D+/g,'');
-    if(digits!==mrnEl.value) mrnEl.value = digits;
-  });
-  const validMrn = v => !v || /^\d{4,}$/.test(v);
+/*
+عند توليد التذكرة:
+- currentTicket = رقم التذكرة الذي حصل عليه المريض للتو
+- ضع النص في عنصر التذكرة (مثلاً #tWait)
+*/
+async function fillTicketAndPrint(currentTicket, mrn){
+  // احسب المنتظرين حسب القاعدة الجديدة
+  const waiting = await calcWaitingFor(currentTicket);
 
-  // Submit → update DB → print
-  document.getElementById('frm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    errEl.textContent="";
+  // املأ عناصر التذكرة (عدّل المعرفات بحسب صفحتك)
+  document.getElementById("tNum").textContent  = currentTicket;    // الرقم الكبير
+  document.getElementById("tMrn").textContent  = mrn || "";        // MRN إن وُجد
+  document.getElementById("tWait").textContent = waitingTextAr(waiting);
 
-    const mrn = (mrnEl.value||"").trim();
-    if(!validMrn(mrn)){ errEl.textContent="فضلاً أدخل رقم الملف بشكل صحيح."; mrnEl.focus(); return; }
+  // اطبع
+  window.print();
+}
 
-    const snap = await nextRef.get();
-    const n = snap.exists() ? snap.val() : 1;
-
-    // Write DB
-    const updates={};
-    updates[`${ROOT}/printed/${n}`] = true;
-    if(mrn) updates[`${ROOT}/mrn/${n}`] = mrn;
-    updates[`${ROOT}/next`] = (n>=1000)?1:n+1;
-    await db.ref().update(updates);
-
-    // Compose ticket
-    tNum.textContent = n;
-    tMrn.textContent = mrn ? `رقم الملف: ${mrn}` : "";
-    tWait.textContent = arabicWaitingText(await getWaitingCount());
-    tTs.textContent = new Date().toLocaleString('en-US', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
-
-    // Trigger print (Edge kiosk prints silently with --kiosk-printing)
-    window.print();
-
-    // Reset for next patient
-    mrnEl.value=""; setTimeout(()=>mrnEl.focus(), 200);
-  });
-})();
+/* مثال من حدث الإرسال في الفورم:
+form.onsubmit = async (e)=>{
+  e.preventDefault();
+  const mrn = mrnInput.value.trim();
+  // ... تحقق MRN داخليًا
+  const ticket = await reserveNextTicketNumber(); // منطقك لحجز الرقم + db.ref(`${ROOT}/printed/${ticket}`).set(true)
+  await fillTicketAndPrint(ticket, mrn);
+};
+*/
 </script>
 </body>
 </html>
