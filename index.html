@@ -6,210 +6,212 @@
 <title>Cardiac Kiosk</title>
 
 <style>
-  :root{--blue:#2563eb;--ink:#0f172a;--muted:#64748b;--line:#e5e7eb;--panel:#fff;--bg:#f5f7fb}
+  :root{
+    --blue:#2563eb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --bg:#f6f7fb; --card:#fff;
+  }
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center}
-  .wrap{width:min(960px,92vw);padding:24px 20px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px;box-shadow:0 10px 28px rgba(2,8,23,.06);text-align:center}
-  h1{margin:10px 0 6px;font-size:clamp(42px,7.2vw,68px);font-weight:900}
-  .sub{margin:0 0 20px;color:var(--muted);font-size:clamp(18px,3.4vw,26px)}
+  body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic","Geeza Pro","Tahoma",sans-serif;color:var(--ink)}
+  .wrap{margin:auto;width:min(960px,96vw);min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:24px}
+  h1{font-size:clamp(40px,8.5vw,90px);text-align:center;margin:10px 0 0}
+  .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:var(--muted)}
   form{display:flex;flex-direction:column;gap:14px;align-items:center}
-  label{width:100%;max-width:640px;color:var(--muted);font-weight:700;text-align:center;font-size:20px}
-  .row{width:100%;max-width:640px}
-  input{width:100%;padding:16px 14px;border-radius:14px;border:2px solid #c7d2fe;font-size:20px;text-align:center}
-  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.35)}
-  .btn{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-weight:900;font-size:22px;cursor:pointer;width:100%;max-width:640px}
-  .nextLabel{margin-top:8px;color:var(--muted);font-weight:700;text-align:center;font-size:20px}
-  .hint{margin-top:10px;color:#64748b;font-size:15px;text-align:center;opacity:.9}
-  .err{min-height:22px;color:#dc2626;font-weight:700;text-align:center;margin-top:4px}
-
-  /* PRINT: Arabic body with English title; Epson TM-T20 80×90mm */
+  label{font-weight:700}
+  input{width:100%;max-width:680px;padding:16px 18px;font-size:22px;border:2px solid var(--line);border-radius:14px;letter-spacing:1px}
+  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px #dbeafe}
+  .btn{background:var(--blue);color:#fff;font-weight:800;border:0;border-radius:14px;padding:14px 26px;font-size:22px;cursor:pointer}
+  .next{margin-top:8px;text-align:center;color:var(--muted)}
+  .next b{color:#111}
+  .err{min-height:22px;color:#dc2626;text-align:center}
+  /* قالب الطباعة */
   @media print{
     @page{ size:80mm 90mm; margin:0 }
-    body>*{ display:none !important }
-
-    #ticket{
-      display:block !important; width:100%; height:90mm; padding:6mm 6mm; text-align:center;
-      font-family:"Consolas","Courier New",monospace; -webkit-print-color-adjust:exact; print-color-adjust:exact; direction:rtl;
-    }
-    #tHead   { font-size:12pt; font-weight:bold; margin:0 0 4px; direction:ltr } /* English title */
-    #tHello  { font-size:14pt; font-weight:900; margin:2mm 0 1mm }
-    #tLabel  { font-size:10pt; margin:2mm 0 0 }   /* "رقم الانتظار — رقمك هو" */
-    #tNum    { font-size:50pt; font-weight:900; line-height:1; margin:2mm 0 2mm }
-    #tMrn    { font-size:11pt; margin:1mm 0 }
-    #tWait   { font-size:10pt; margin:2mm 0 }
-    #tTs     { font-size:10pt; margin:1.5mm 0 }
-    #tThanks { font-size:12pt; margin-top:3mm }
+    body > *{display:none !important}
+    #ticket{display:block !important;width:100%;padding:10mm 7mm 8mm 7mm;direction:rtl}
+    #tTitle{font-family:Arial,Helvetica,sans-serif;font-size:14pt;font-weight:800;text-align:center;margin-bottom:4mm}
+    #tHello{font-size:14pt;text-align:center;margin:0}
+    #tSub{font-size:11pt;text-align:center;margin:1mm 0 5mm}
+    #tNum{font-size:56pt;line-height:1.0;text-align:center;font-weight:900;margin:0 0 4mm}
+    #tMrn{font-size:14pt;text-align:center;margin:0 0 2mm}
+    #tWait{font-size:13pt;text-align:center;margin:0 0 4mm}
+    #tLine{height:2px;background:#000;margin:3mm 0}
+    #tThanks{font-size:14pt;text-align:center;margin:2mm 0 3mm}
+    #tTs{font-size:11pt;text-align:center;margin:0}
   }
 </style>
 
-<!-- Firebase -->
+<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>مرحبًا</h1>
+    <div class="sub">Cardiac Pharmacy Ticket</div>
+    <h1>مرحبًا</h1>
+    <div class="sub">فضلًا اكتب رقم الملف (MRN)</div>
 
-      <form id="frm">
-        <form id="frm" class="form">
-  <label for="mrn">رقم الملف (MRN)</label>
-  <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
-  <button id="btn" class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
-  <div class="next">الرقم التالي: <span id="nextNum"></span></div>
-  <div class="err" id="err" aria-live="polite"></div>
-</form>
+    <form id="f">
+      <label for="mrn" class="sub" style="margin-top:6px;">رقم الملف (MRN)</label>
+      <input id="mrn" inputmode="numeric" autocomplete="off" placeholder="MRN" />
+      <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
+      <div class="next">الرقم التالي: <b><span id="nextNum">—</span></b></div>
+      <div class="err" id="err"></div>
+    </form>
   </div>
 
-    <script>
-// تحويل الأرقام العربية إلى لاتينية
-function normalizeDigits(str) {
-  const ar = "٠١٢٣٤٥٦٧٨٩";
-  const fa = "۰۱۲۳۴۵۶۷۸۹";
-  return String(str).replace(/[٠-٩۰-۹]/g, d => {
-    const iAr = ar.indexOf(d);
-    if (iAr > -1) return String(iAr);
-    const iFa = fa.indexOf(d);
-    if (iFa > -1) return String(iFa);
-    return d;
-  });
-}
-
-// تحقق داخلي: أرقام فقط وطول ≥ 4 بدون تفاصيل
-function isValidMRN(raw) {
-  const v = normalizeDigits(raw).trim();
-  return /^\d{4,}$/.test(v);
-}
-
-// عناصر الصفحة
-const frm = document.getElementById('frm');
-const mrnInput = document.getElementById('mrn');
-const btn = document.getElementById('btn');
-const err = document.getElementById('err');
-
-// تحديث الزر بصمت
-function updateBtnState() {
-  const ok = isValidMRN(mrnInput.value);
-  btn.disabled = !ok;
-  err.textContent = "";
-}
-updateBtnState();
-
-// تصفية الإدخال
-mrnInput.addEventListener('input', () => {
-  const normalized = normalizeDigits(mrnInput.value).replace(/\D+/g, '');
-  if (mrnInput.value !== normalized) mrnInput.value = normalized;
-  updateBtnState();
-});
-
-// منع الإرسال بدون رقم صحيح
-frm.addEventListener('submit', (e) => {
-  const ok = isValidMRN(mrnInput.value);
-  if (!ok) {
-    e.preventDefault();
-    err.textContent = "فضلاً أدخل رقم ملف صحيح.";
-    mrnInput.focus();
-  }
-});
-</script>
-  <!-- PRINT CONTENT -->
+  <!-- قالب التذكرة (يُستخدم عند الطباعة فقط) -->
   <div id="ticket" style="display:none">
-    <div id="tHead">Cardiac Pharmacy Ticket</div>  <!-- English title -->
+    <div id="tTitle">Cardiac Pharmacy Ticket</div>
     <div id="tHello">مرحبًا</div>
-    <div id="tLabel"> رقمك هو</div>
+    <div id="tSub">رقمك هو</div>
     <div id="tNum">-</div>
     <div id="tMrn"></div>
     <div id="tWait"></div>
+    <div id="tLine"></div>
     <div id="tThanks">شكرًا لانتظارك</div>
     <div id="tTs"></div>
   </div>
 
 <script>
 (function(){
-  // ===== Firebase =====
+  // ========= الإعدادات =========
   const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
   const db=firebase.database();
-  const ROOT="cardiac_demo"; // بدّليها إلى "cardiac" إذا تبين الإنتاج
+  const ROOT = "cardiac_demo"; // ✳️ غيّرها إذا كان الجذر مختلفًا
+  const MIN = 1, MAX = 1000;
 
-  // UI refs
-  const mrnEl=document.getElementById('mrn');
-  const errEl=document.getElementById('err');
-  const nextEl=document.getElementById('nextNum');
+  const f = document.getElementById('f');
+  const mrnInput = document.getElementById('mrn');
+  const err = document.getElementById('err');
+  const nextNumEl = document.getElementById('nextNum');
 
-  // Ticket refs
-  const tNum=document.getElementById('tNum');
-  const tMrn=document.getElementById('tMrn');
-  const tWait=document.getElementById('tWait');
-  const tTs=document.getElementById('tTs');
+  // نص عربي سليم لعدد المنتظرين
+  function waitingArabic(n){
+    if(n <= 0) return "لا أحد أمامك في الانتظار";
+    if(n === 1) return "أمامك ١ شخص في الانتظار";
+    if(n === 2) return "أمامك شخصان في الانتظار";
+    // 3..10
+    const map = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+    const toArabicDigits = s => (""+s).replace(/\d/g,d=>map[+d]);
+    return `أمامك ${toArabicDigits(n)} أشخاص في الانتظار`;
+  }
 
-  // Show next number live
-  const nextRef = db.ref(`${ROOT}/next`);
-  nextRef.on('value', s=>{
-    const n = s.val() || 1;
-    nextEl.textContent = n;
+  // الحصول على الرقم التالي (1..1000، مع إعادة البدء)
+  async function getNextNumber(){
+    const snap = await db.ref(`${ROOT}/printed`).get();
+    const printed = snap.val() || {};
+    // ابحث عن أكبر رقم مطبوع ثم +1 (وإلا البداية من 1)
+    let maxPrinted = 0;
+    for(const k in printed){
+      const n = parseInt(k,10);
+      if(!isNaN(n) && n > maxPrinted) maxPrinted = n;
+    }
+    let next = maxPrinted ? maxPrinted + 1 : MIN;
+    if(next > MAX) next = MIN;
+    return next;
+  }
+
+  // عرض الرقم التالي أسفل الزر
+  async function refreshNext(){
+    const n = await getNextNumber();
+    nextNumEl.textContent = n;
+  }
+
+  // حساب عدد المنتظرين قبل رقم معيّن:
+  async function countWaitingBefore(current){
+    // printed: true لمن طُبع
+    // served: true لمن خُدم
+    const [pSnap, sSnap] = await Promise.all([
+      db.ref(`${ROOT}/printed`).get(),
+      db.ref(`${ROOT}/served`).get()
+    ]);
+    const printed = pSnap.val() || {};
+    const served  = sSnap.val()  || {};
+    let count = 0;
+    for(const k in printed){
+      const n = parseInt(k,10);
+      if(!isNaN(n) && n < current && !served[n]) count++;
+    }
+    return count;
+  }
+
+  // طباعة التذكرة في نافذة/وثيقة منفصلة بدون حواف المتصفّح قدر الإمكان
+  function printTicketInPopup(html){
+    const w = window.open('', '_blank', 'width=480,height=800');
+    w.document.open();
+    w.document.write(`
+      <html lang="ar" dir="rtl">
+      <head>
+        <meta charset="utf-8">
+        <title>Print</title>
+        <style>
+          @page{ size:80mm 90mm; margin:0 }
+          body{ margin:0 }
+        </style>
+      </head>
+      <body>${html}</body>
+      </html>
+    `);
+    w.document.close();
+    // انتظر تهيئة الخطوط ثم اطبع
+    setTimeout(()=>{ w.focus(); w.print(); setTimeout(()=>w.close(), 150); }, 150);
+  }
+
+  // التحقق من الـ MRN (أرقام فقط وطول ≥ 3)
+  function validMRN(v){
+    return /^[0-9]{3,}$/.test((v||"").trim());
+  }
+
+  // عند الإرسال
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    err.textContent = '';
+    const mrn = mrnInput.value.trim();
+    if(!validMRN(mrn)){
+      err.textContent = "فضلاً أدخل MRN صحيحًا.";
+      return;
+    }
+
+    // رقم التذكرة القادم
+    const num = await getNextNumber();
+
+    // احسب عدد المنتظرين قبله (المطبوعين الأصغر غير المخدومين)
+    const waiting = await countWaitingBefore(num);
+
+    // سجّل على فيربيز: مطبوع + MRN
+    await Promise.all([
+      db.ref(`${ROOT}/printed/${num}`).set(true),
+      db.ref(`${ROOT}/mrn/${num}`).set(mrn),
+      db.ref(`${ROOT}/latestPrinted`).set({ number:num, mrn, ts:Date.now() })
+    ]);
+
+    // جهّز قالب التذكرة
+    const t = document.getElementById('ticket').cloneNode(true);
+    t.style.display = 'block';
+    t.querySelector('#tNum').textContent = num;
+    t.querySelector('#tMrn').textContent = `رقم الملف: ${mrn}`;
+    t.querySelector('#tWait').textContent = waitingArabic(waiting);
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US'); // Gregorian (MM/DD/YYYY)
+    const timeStr = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',hour12:true});
+    t.querySelector('#tTs').textContent = `${timeStr} , ${dateStr}`;
+
+    // اطبع في نافذة منبثقة (أكثر ثباتًا مع درايفرات التذاكر)
+    printTicketInPopup(t.outerHTML);
+
+    // صفّر الحقل وحدث "الرقم التالي"
+    mrnInput.value = '';
+    refreshNext();
   });
 
-  // Count waiting (printed & not served & not no-show)
-  
-async function calcWaitingFor(current) {
-  // نحضر الحالات الحالية
-  const [printedSnap, servedSnap] = await Promise.all([
-    db.ref(`${ROOT}/printed`).get(),
-    db.ref(`${ROOT}/served`).get()
-  ]);
-  const printed = printedSnap.val() || {};
-  const served  = servedSnap.val()  || {};
+  // تهيئة أولية
+  refreshNext();
 
-  // العدّ: مطبوع وأصغر من رقم التذكرة الحالية ولم يُخدم
-  let count = 0;
-  for (const k of Object.keys(printed)) {
-    const n = parseInt(k, 10);
-    if (Number.isInteger(n) && n < current && printed[k] && !served[k]) {
-      count++;
-    }
-  }
-  return count;
-}
-
-// تصريف عربي للجملة
-function waitingTextAr(n){
-  if (n === 0) return "لا يوجد أحد أمامك في الانتظار";
-  if (n === 1) return "أمامك شخص واحد في الانتظار";
-  if (n === 2) return "أمامك شخصان في الانتظار";
-  if (n >= 3 && n <= 10) return `أمامك ${n} أشخاص في الانتظار`;
-  return `أمامك ${n} شخصًا في الانتظار`;
-}
-
-/*
-عند توليد التذكرة:
-- currentTicket = رقم التذكرة الذي حصل عليه المريض للتو
-- ضع النص في عنصر التذكرة (مثلاً #tWait)
-*/
-async function fillTicketAndPrint(currentTicket, mrn){
-  // احسب المنتظرين حسب القاعدة الجديدة
-  const waiting = await calcWaitingFor(currentTicket);
-
-  // املأ عناصر التذكرة (عدّل المعرفات بحسب صفحتك)
-  document.getElementById("tNum").textContent  = currentTicket;    // الرقم الكبير
-  document.getElementById("tMrn").textContent  = mrn || "";        // MRN إن وُجد
-  document.getElementById("tWait").textContent = waitingTextAr(waiting);
-
-  // اطبع
-  window.print();
-}
-
-/* مثال من حدث الإرسال في الفورم:
-form.onsubmit = async (e)=>{
-  e.preventDefault();
-  const mrn = mrnInput.value.trim();
-  // ... تحقق MRN داخليًا
-  const ticket = await reserveNextTicketNumber(); // منطقك لحجز الرقم + db.ref(`${ROOT}/printed/${ticket}`).set(true)
-  await fillTicketAndPrint(ticket, mrn);
-};
-*/
+  // تحديث مباشر للرقم التالي لو طُبعت أرقام من أجهزة أخرى
+  db.ref(`${ROOT}/printed`).on('value', refreshNext);
+})();
 </script>
 </body>
 </html>
