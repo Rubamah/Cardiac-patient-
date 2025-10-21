@@ -11,38 +11,78 @@
     --bg:#f7f9fc; --panel:#ffffff;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Geeza Pro",sans-serif;color:var(--ink)}
-  .wrap{width:min(960px,96vw);margin:auto;padding:16px}
-  .top{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .lang{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px;cursor:pointer}
-  .lang.active{background:#111;color:#fff;border-color:#000}
-  h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0 0;text-align:center}
-  .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:var(--muted);margin-top:6px}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Geeza Pro",sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+  .wrap{
+    text-align:center;
+    width:100%;
+    max-width:600px;
+    padding:24px;
+  }
+  h1{
+    font-size:clamp(48px,10vw,100px);
+    margin:10px 0 0;
+  }
+  .sub{
+    font-size:clamp(20px,3.5vw,28px);
+    color:var(--muted);
+    margin-top:10px;
+  }
+  form{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top:40px;
+  }
+  label{font-weight:700;margin-bottom:8px}
+  input{
+    width:80%;
+    padding:14px;
+    border:2px solid var(--line);
+    border-radius:14px;
+    font-size:20px;
+    text-align:center;
+  }
+  input:focus{
+    outline:none;
+    border-color:#93c5fd;
+    box-shadow:0 0 0 3px rgba(59,130,246,.15);
+  }
+  .btn{
+    margin-top:18px;
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:14px 22px;
+    font-size:22px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .err{min-height:22px;color:#dc2626;margin-top:10px;font-size:18px}
 
-  form{display:flex;flex-direction:column;gap:14px;margin:20px auto 10px;width:min(680px,100%)}
-  label{font-weight:700}
-  input{width:100%;max-width:680px;padding:16px;border:2px solid var(--line);border-radius:14px;font-size:20px}
-  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .btn{flex:1 1 200px;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-size:22px;font-weight:800;cursor:pointer}
-  .err{min-height:22px;color:#dc2626;text-align:center}
-
-  .next{margin-top:8px;text-align:center;color:#64748b}
-  .next b{color:#111}
-
-  /* ---------- قالب الطباعة ---------- */
+‎  /* ---------- قالب الطباعة ---------- */
   @media print{
     @page{ size:80mm auto; margin:0 }
     body *{ display:none !important }
     #ticket{
       display:block !important;
-      width:72mm;     /* نترك 4mm يمين ويسار داخل رول 80mm */
+      width:72mm;
       margin:0;
       padding:6mm 0;
       text-align:center;
       -webkit-print-color-adjust:exact;
               print-color-adjust:exact;
     }
+    #tHeader{font-size:11pt;color:#555;margin-bottom:2mm}
     #tTitle  { font-size:18pt; font-weight:900 }
     #tSub    { font-size:12pt }
     #tNum    { font-size:60pt; font-weight:900; line-height:1 }
@@ -60,31 +100,22 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
-      <div></div>
-      <div class="lang active" id="btnAr">العربية</div>
-      <div class="lang" id="btnEn">English</div>
-    </div>
-
-    <h1 id="title">مرحبًا</h1>
-    <div class="sub" id="subtitle">فضلاً اكتب رقم الملف (MRN)</div>
+    <h1>مرحبًا</h1>
+    <div class="sub">فضلاً اكتب رقم الملف (MRN)</div>
 
     <form id="form">
-      <label for="mrn" id="lblMrn">رقم الملف (MRN)</label>
+      <label for="mrn">رقم الملف (MRN)</label>
       <input id="mrn" inputmode="numeric" pattern="[0-9]*" placeholder="MRN" autocomplete="off" />
-      <div class="row">
-        <button type="submit" class="btn" id="btnPrint">طباعة التذكرة</button>
-      </div>
+      <button type="submit" class="btn">طباعة التذكرة / Print Ticket</button>
       <div class="err" id="err"></div>
     </form>
 
-    <div class="next" id="tip">
-      سيتم طباعة التذكرة تلقائيًا. تأكد من اختيار طابعة الرول وحفظ الإعدادات بدون ترويسة.
-    </div>
+    <div class="next" id="tip">تأكد من اختيار طابعة الرول.</div>
   </div>
 
-  <!-- قالب التذكرة (يظهر فقط وقت الطباعة) -->
+‎  <!-- قالب التذكرة (يظهر فقط وقت الطباعة) -->
   <div id="ticket" style="display:none">
+    <div id="tHeader">Cardiac Pharmacy Ticket</div>
     <div id="tTitle">مرحبًا</div>
     <div id="tSub">رقم الانتظار</div>
     <div id="tNum">1</div>
@@ -97,8 +128,7 @@
 
 <script>
 (function(){
-  // ------------ الإعدادات ------------
-  const ROOT = "cardiac_demo"; // غيّرها إلى "cardiac" لو لزم
+  const ROOT = "cardiac_demo";
   const cfg = {
     apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
     authDomain:"q-matic-b7d77.firebaseapp.com",
@@ -111,61 +141,14 @@
   firebase.initializeApp(cfg);
   const db = firebase.database();
 
-  // ------------ عناصر DOM ------------
   const form = document.getElementById('form');
   const mrnInput = document.getElementById('mrn');
   const err = document.getElementById('err');
-  const btnAr = document.getElementById('btnAr');
-  const btnEn = document.getElementById('btnEn');
-
   const tNum = document.getElementById('tNum');
   const tMrn = document.getElementById('tMrn');
   const tWait = document.getElementById('tWait');
   const tTs = document.getElementById('tTs');
 
-  // ترجمة بسيطة
-  const copy = {
-    ar:{
-      title:"مرحبًا",
-      sub:"فضلاً اكتب رقم الملف (MRN)",
-      mrn:"رقم الملف (MRN)",
-      print:"طباعة التذكرة",
-      err:"فضلاً أدخل MRN صحيحًا (أرقام فقط، 4 خانات فأكثر).",
-      wait:"عدد المنتظرين: ",
-      thanks:"شكرًا لانتظارك",
-      queue:"رقم الانتظار"
-    },
-    en:{
-      title:"Welcome",
-      sub:"Please enter your MRN",
-      mrn:"MRN",
-      print:"Print Ticket",
-      err:"Please enter a valid MRN (digits only, 4+).",
-      wait:"No. of people waiting: ",
-      thanks:"Thank you for waiting",
-      queue:"Your queuing number"
-    }
-  };
-  let lang = 'ar';
-  function applyLang(){
-    const c = copy[lang];
-    document.getElementById('title').textContent = c.title;
-    document.getElementById('subtitle').textContent = c.sub;
-    document.getElementById('lblMrn').textContent = c.mrn;
-    document.getElementById('btnPrint').textContent = c.print;
-    document.getElementById('tTitle').textContent = c.title;
-    document.getElementById('tSub').textContent = (lang==='ar'?'رقم الانتظار':c.queue);
-    document.getElementById('tThanks').textContent = c.thanks;
-    document.documentElement.lang = (lang==='ar'?'ar':'en');
-    document.documentElement.dir = (lang==='ar'?'rtl':'ltr');
-    btnAr.classList.toggle('active', lang==='ar');
-    btnEn.classList.toggle('active', lang==='en');
-  }
-  btnAr.onclick = ()=>{ lang='ar'; applyLang(); };
-  btnEn.onclick = ()=>{ lang='en'; applyLang(); };
-  applyLang();
-
-  // ------------ حساب عدد المنتظرين (أخضر ولم يُخدم) ------------
   let printed = {}, served = {};
   db.ref(`${ROOT}/printed`).on("value", s=>{ printed = s.val()||{}; });
   db.ref(`${ROOT}/served`).on("value", s=>{ served = s.val()||{}; });
@@ -178,7 +161,6 @@
     return c;
   }
 
-  // ------------ احصل على الرقم التالي (1..1000) ------------
   async function getNextNumber(){
     const snap = await db.ref(`${ROOT}/counter`).get();
     let n = (snap.exists()? Number(snap.val()) : 0) + 1;
@@ -187,14 +169,12 @@
     return n;
   }
 
-  // ------------ طباعة التذكرة ------------
   function printTicket(num, mrn, wait){
-    // جهّز بيانات التذكرة
     tNum.textContent = num;
     tMrn.textContent = mrn ? mrn : "";
-    tWait.textContent = (lang==='ar' ? copy.ar.wait : copy.en.wait) + String(wait);
+    tWait.textContent = "عدد المنتظرين: " + String(wait);
     const d = new Date();
-    const ts = d.toLocaleString(lang==='ar'?'ar-SA':'en-US', { hour12:false });
+    const ts = d.toLocaleString('ar-SA', { hour12:false });
     tTs.textContent = ts;
 
     const ticket = document.getElementById('ticket');
@@ -203,42 +183,242 @@
     window.onafterprint = ()=>{ ticket.style.display = 'none'; };
   }
 
-  // ------------ تحقق MRN ------------
   function validMrn(v){
     return /^\d{4,}$/.test(v.trim());
   }
 
-  // ------------ عند الضغط طباعة ------------
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const mrn = mrnInput.value.trim();
-
     if(!validMrn(mrn)){
-      err.textContent = (lang==='ar'?copy.ar.err:copy.en.err);
+      <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cardiac Kiosk</title>
+
+<style>
+  :root{
+    --blue:#2563eb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --bg:#f7f9fc; --panel:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Geeza Pro",sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+  .wrap{
+    text-align:center;
+    width:100%;
+    max-width:600px;
+    padding:24px;
+  }
+  h1{
+    font-size:clamp(48px,10vw,100px);
+    margin:10px 0 0;
+  }
+  .sub{
+    font-size:clamp(20px,3.5vw,28px);
+    color:var(--muted);
+    margin-top:10px;
+  }
+  form{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top:40px;
+  }
+  label{font-weight:700;margin-bottom:8px}
+  input{
+    width:80%;
+    padding:14px;
+    border:2px solid var(--line);
+    border-radius:14px;
+    font-size:20px;
+    text-align:center;
+  }
+  input:focus{
+    outline:none;
+    border-color:#93c5fd;
+    box-shadow:0 0 0 3px rgba(59,130,246,.15);
+  }
+  .btn{
+    margin-top:18px;
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:14px 22px;
+    font-size:22px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .err{min-height:22px;color:#dc2626;margin-top:10px;font-size:18px}
+
+‎  /* ---------- قالب الطباعة ---------- */
+  @media print{
+    @page{ size:80mm auto; margin:0 }
+    body *{ display:none !important }
+    #ticket{
+      display:block !important;
+      width:72mm;
+      margin:0;
+      padding:6mm 0;
+      text-align:center;
+      -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
+    }
+    #tHeader{font-size:11pt;color:#555;margin-bottom:2mm}
+    #tTitle  { font-size:18pt; font-weight:900 }
+    #tSub    { font-size:12pt }
+    #tNum    { font-size:60pt; font-weight:900; line-height:1 }
+    #tMrn    { font-size:18pt; margin:2mm 0 }
+    #tWait   { font-size:12pt; margin:2mm 0 }
+    #tTs     { font-size:12pt; margin:4px 0 }
+    #tLine   { height:2px; background:#000; margin:6px 0 }
+    #tThanks { font-size:16pt }
+  }
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>مرحبًا</h1>
+    <div class="sub">فضلاً اكتب رقم الملف (MRN)</div>
+
+    <form id="form">
+      <label for="mrn">رقم الملف (MRN)</label>
+      <input id="mrn" inputmode="numeric" pattern="[0-9]*" placeholder="MRN" autocomplete="off" />
+      <button type="submit" class="btn">طباعة التذكرة / Print Ticket</button>
+      <div class="err" id="err"></div>
+    </form>
+
+    <div class="next" id="tip">تأكد من اختيار طابعة الرول.</div>
+  </div>
+
+‎  <!-- قالب التذكرة (يظهر فقط وقت الطباعة) -->
+  <div id="ticket" style="display:none">
+    <div id="tHeader">Cardiac Pharmacy Ticket</div>
+    <div id="tTitle">مرحبًا</div>
+    <div id="tSub">رقم الانتظار</div>
+    <div id="tNum">1</div>
+    <div id="tMrn">123456</div>
+    <div id="tLine"></div>
+    <div id="tWait">عدد المنتظرين: 0</div>
+    <div id="tTs"></div>
+    <div id="tThanks">شكرًا لانتظارك</div>
+  </div>
+
+<script>
+(function(){
+  const ROOT = "cardiac_demo";
+  const cfg = {
+    apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
+    authDomain:"q-matic-b7d77.firebaseapp.com",
+    databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",
+    projectId:"q-matic-b7d77",
+    storageBucket:"q-matic-b7d77.appspot.com",
+    messagingSenderId:"908187704899",
+    appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"
+  };
+  firebase.initializeApp(cfg);
+  const db = firebase.database();
+
+  const form = document.getElementById('form');
+  const mrnInput = document.getElementById('mrn');
+  const err = document.getElementById('err');
+  const tNum = document.getElementById('tNum');
+  const tMrn = document.getElementById('tMrn');
+  const tWait = document.getElementById('tWait');
+  const tTs = document.getElementById('tTs');
+
+  let printed = {}, served = {};
+  db.ref(`${ROOT}/printed`).on("value", s=>{ printed = s.val()||{}; });
+  db.ref(`${ROOT}/served`).on("value", s=>{ served = s.val()||{}; });
+
+  function waitingCount(){
+    let c=0;
+    for(const k in printed){
+      if(printed[k] && !served[k]) c++;
+    }
+    return c;
+  }
+
+  async function getNextNumber(){
+    const snap = await db.ref(`${ROOT}/counter`).get();
+    let n = (snap.exists()? Number(snap.val()) : 0) + 1;
+    if(n>1000) n=1;
+    await db.ref(`${ROOT}/counter`).set(n);
+    return n;
+  }
+
+  function printTicket(num, mrn, wait){
+    tNum.textContent = num;
+    tMrn.textContent = mrn ? mrn : "";
+    tWait.textContent = "عدد المنتظرين: " + String(wait);
+    const d = new Date();
+    const ts = d.toLocaleString('ar-SA', { hour12:false });
+    tTs.textContent = ts;
+
+    const ticket = document.getElementById('ticket');
+    ticket.style.display = 'block';
+    setTimeout(()=>{ window.print(); }, 30);
+    window.onafterprint = ()=>{ ticket.style.display = 'none'; };
+  }
+
+  function validMrn(v){
+    return /^\d{4,}$/.test(v.trim());
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const mrn = mrnInput.value.trim();
+    if(!validMrn(mrn)){
+      err.textContent = "فضلاً أدخل رقم الملف بشكل صحيح.";
       mrnInput.focus();
       return;
     }
     err.textContent = "";
 
-    // الرقم التالي
     const num = await getNextNumber();
-
-    // سجّل في فايربيس: مطبوع + MRN
     const updates = {};
     updates[`${ROOT}/printed/${num}`] = true;
-    updates[`${ROOT}/mrn/${num}`]     = { value: mrn, ts: Date.now() };
+    updates[`${ROOT}/mrn/${num}`] = { value: mrn, ts: Date.now() };
     await db.ref().update(updates);
 
-    // احسب المنتظرين وقت الطباعة
     const wait = waitingCount();
-
-    // اطبع
     printTicket(num, mrn, wait);
-
-    // تفريغ الخانة
     mrnInput.value = "";
   });
+})();
+</script>
+</body>
+</html>
+      mrnInput.focus();
+      return;
+    }
+    err.textContent = "";
 
+    const num = await getNextNumber();
+    const updates = {};
+    updates[`${ROOT}/printed/${num}`] = true;
+    updates[`${ROOT}/mrn/${num}`] = { value: mrn, ts: Date.now() };
+    await db.ref().update(updates);
+
+    const wait = waitingCount();
+    printTicket(num, mrn, wait);
+    mrnInput.value = "";
+  });
 })();
 </script>
 </body>
