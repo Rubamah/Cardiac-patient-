@@ -32,15 +32,15 @@
   @media print{
     @page{ size:80mm 90mm; margin:0 }
     body > *{display:none !important}
-    #ticket{display:block !important;width:100%;padding:10mm 7mm 8mm 7mm;direction:rtl}
+    #ticket{display:none !important;width:100%;padding:10mm 7mm 8mm 7mm;direction:rtl}
     #tTitle{font-family:Arial,Helvetica,sans-serif;font-size:14pt;font-weight:800;text-align:center;margin-bottom:4mm}
-    #tHello{font-size:14pt;text-align:center;margin:0}
+    #tHello{font-size:30pt;text-align:center;margin:0}
     #tSub{font-size:11pt;text-align:center;margin:1mm 0 5mm}
     #tNum{font-size:56pt;line-height:1.0;text-align:center;font-weight:900;margin:0 0 4mm}
     #tMrn{font-size:14pt;text-align:center;margin:0 0 2mm}
     #tWait{font-size:13pt;text-align:center;margin:0 0 4mm}
     #tLine{height:2px;background:#000;margin:3mm 0}
-    #tThanks{font-size:14pt;text-align:center;margin:2mm 0 3mm}
+    #tThanks{font-size:20pt;text-align:center;margin:2mm 0 3mm}
     #tTs{font-size:11pt;text-align:center;margin:0}
   }
 </style>
@@ -53,10 +53,10 @@
   <div class="wrap">
     <div class="sub">Cardiac Pharmacy Ticket</div>
     <h1>مرحبًا</h1>
-    <div class="sub">فضلًا اكتب رقم الملف (MRN)</div>
 
     <form id="f" autocomplete="off">
-      <label for="mrn" class="sub" style="margin-top:6px;">رقم الملف (MRN)</label>
+      <label for="mrn" class="sub" style="margin-top:6px;"> فضلًا ادخل رقم الملف (MRN)</label>
+      
       <input id="mrn" inputmode="numeric" placeholder="MRN" />
       <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
       <div class="next">الرقم التالي: <b><span id="nextNum">—</span></b></div>
