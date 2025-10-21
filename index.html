@@ -1,151 +1,244 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cardiac Kiosk</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cardiac Kiosk</title>
 
-  <style>
-    :root{--blue:#2563eb;--ink:#0f172a;--muted:#6b7280;--panel:#fff;--line:#e5e7eb}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Noto Kufi Arabic",Tahoma,sans-serif;background:#f8fafc;color:var(--ink);min-height:100vh;display:flex}
-    .wrap{margin:auto;width:min(960px,96vw);background:var(--panel);border-radius:20px;box-shadow:0 12px 34px rgba(0,0,0,.06);padding:28px}
-    .top{display:flex;gap:8px;justify-content:flex-end}
-    .lang{border:1px solid var(--line);background:#f1f5f9;padding:.55rem .9rem;border-radius:10px;cursor:pointer;font-weight:800}
-    .lang.active{background:#111;color:#fff;border-color:#111}
-    h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0 6px;text-align:center}
-    .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:#1f2937;margin:0 0 20px}
-    form{display:flex;flex-direction:column;gap:14px;align-items:center}
-    input{width:100%;max-width:680px;padding:16px;border:2px solid var(--line);border-radius:14px;text-align:center;font-size:clamp(22px,4.2vw,28px)}
-    input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px #dbeafe}
-    .btn{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-weight:900;font-size:clamp(18px,3.8vw,22px);cursor:pointer}
-    .err{min-height:22px;color:#dc2626;text-align:center}
-    .next{margin-top:8px;text-align:center;color:var(--muted);font-size:clamp(14px,3.2vw,16px)}
-    .next b{color:#111}
-
-/* Epson TM-T20II print template */
-@media print {
-  @page {
-    size: 80mm 150mm;    /* عرض رول Epson مع ارتفاع تلقائي */
-    margin: 0;
+<style>
+  :root{
+    --blue:#2563eb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --bg:#f7f9fc; --panel:#ffffff;
   }
-  body * { display: none !important; }
-  #ticket {
-    display: block !important;
-    width: 72mm;
-    margin: 0 auto;
-    padding: 6mm 0;
-    text-align: center;
-  }
-  #tTitle { font-size: 18pt; font-weight: 900; }
-  #tSub { font-size: 12pt; }
-  #tNum { font-size: 60pt; font-weight: 900; line-height: 1; }
-  #tMrn { font-size: 18pt; margin: 2mm 0; }
-  #tTs { font-size: 12pt; margin: 3mm 0; }
-  #tLine { height: 2px; background: #000; margin: 5mm 0; }
-  #tThanks { font-size: 16pt; }
-}
-  </style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,"Noto Naskh Arabic UI","Geeza Pro",sans-serif;color:var(--ink)}
+  .wrap{width:min(960px,96vw);margin:auto;padding:16px}
+  .top{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .lang{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px;cursor:pointer}
+  .lang.active{background:#111;color:#fff;border-color:#000}
+  h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0 0;text-align:center}
+  .sub{font-size:clamp(18px,3.6vw,28px);text-align:center;color:var(--muted);margin-top:6px}
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  form{display:flex;flex-direction:column;gap:14px;margin:20px auto 10px;width:min(680px,100%)}
+  label{font-weight:700}
+  input{width:100%;max-width:680px;padding:16px;border:2px solid var(--line);border-radius:14px;font-size:20px}
+  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{flex:1 1 200px;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-size:22px;font-weight:800;cursor:pointer}
+  .err{min-height:22px;color:#dc2626;text-align:center}
+
+  .next{margin-top:8px;text-align:center;color:#64748b}
+  .next b{color:#111}
+
+  /* ---------- قالب الطباعة ---------- */
+  @media print{
+    @page{ size:80mm auto; margin:0 }
+    body *{ display:none !important }
+    #ticket{
+      display:block !important;
+      width:72mm;     /* نترك 4mm يمين ويسار داخل رول 80mm */
+      margin:0;
+      padding:6mm 0;
+      text-align:center;
+      -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
+    }
+    #tTitle  { font-size:18pt; font-weight:900 }
+    #tSub    { font-size:12pt }
+    #tNum    { font-size:60pt; font-weight:900; line-height:1 }
+    #tMrn    { font-size:18pt; margin:2mm 0 }
+    #tWait   { font-size:12pt; margin:2mm 0 }
+    #tTs     { font-size:12pt; margin:4px 0 }
+    #tLine   { height:2px; background:#000; margin:6px 0 }
+    #tThanks { font-size:16pt }
+  }
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <button id="ar" class="lang active">العربية</button>
-      <button id="en" class="lang">English</button>
+      <div></div>
+      <div class="lang active" id="btnAr">العربية</div>
+      <div class="lang" id="btnEn">English</div>
     </div>
-    <h1 id="title">مرحباً</h1>
-    <p class="sub" id="subtitle">يرجى إدخال رقم الملف الطبي (MRN)</p>
 
-    <form id="frm">
-      <input id="mrn" inputmode="numeric" placeholder="MRN" autocomplete="off" />
-      <button class="btn" type="submit" id="printBtn">طباعة التذكرة</button>
+    <h1 id="title">مرحبًا</h1>
+    <div class="sub" id="subtitle">فضلاً اكتب رقم الملف (MRN)</div>
+
+    <form id="form">
+      <label for="mrn" id="lblMrn">رقم الملف (MRN)</label>
+      <input id="mrn" inputmode="numeric" pattern="[0-9]*" placeholder="MRN" autocomplete="off" />
+      <div class="row">
+        <button type="submit" class="btn" id="btnPrint">طباعة التذكرة</button>
+      </div>
+      <div class="err" id="err"></div>
     </form>
 
-    <div class="err" id="err"></div>
-    <div class="next" id="nextWrap"><span id="nextLabel">الرقم التالي:</span> <b id="nextNum">1</b></div>
+    <div class="next" id="tip">
+      سيتم طباعة التذكرة تلقائيًا. تأكد من اختيار طابعة الرول وحفظ الإعدادات بدون ترويسة.
+    </div>
   </div>
 
-  <!-- PRINT CONTENT -->
+  <!-- قالب التذكرة (يظهر فقط وقت الطباعة) -->
   <div id="ticket" style="display:none">
-    <div id="tTitle">Welcome</div>
-    <div id="tSub">Your queuing number</div>
+    <div id="tTitle">مرحبًا</div>
+    <div id="tSub">رقم الانتظار</div>
     <div id="tNum">1</div>
-    <div id="tMrn">6754</div>
-    <div id="tTs">2023-08-07 18:30</div>
+    <div id="tMrn">123456</div>
     <div id="tLine"></div>
-    <div id="tThanks">Thank you for waiting</div>
+    <div id="tWait">عدد المنتظرين: 0</div>
+    <div id="tTs"></div>
+    <div id="tThanks">شكرًا لانتظارك</div>
   </div>
 
 <script>
 (function(){
-  const STR={
-    ar:{title:"مرحباً",sub:"يرجى إدخال رقم الملف الطبي (MRN)",btn:"طباعة التذكرة",next:"الرقم التالي:",err:"الرجاء إدخال رقم ملف صالح",
-        tTitle:"مرحباً",tSub:"رقم دورك",tThanks:"شكراً لانتظارك"},
-    en:{title:"Welcome",sub:"Please write your MRN",btn:"Print Ticket",next:"Next number:",err:"Please enter valid MRN",
-        tTitle:"Welcome",tSub:"Your queuing number",tThanks:"Thank you for waiting"}
+  // ------------ الإعدادات ------------
+  const ROOT = "cardiac_demo"; // غيّرها إلى "cardiac" لو لزم
+  const cfg = {
+    apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
+    authDomain:"q-matic-b7d77.firebaseapp.com",
+    databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",
+    projectId:"q-matic-b7d77",
+    storageBucket:"q-matic-b7d77.appspot.com",
+    messagingSenderId:"908187704899",
+    appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"
   };
-  let lang=localStorage.getItem("kiosk_lang")||"ar";
-  const $=id=>document.getElementById(id);
-  const el={title:$("title"),subtitle:$("subtitle"),mrn:$("mrn"),btn:$("printBtn"),err:$("err"),nextLabel:$("nextLabel"),nextNum:$("nextNum")};
-  const pt={tTitle:$("tTitle"),tSub:$("tSub"),tNum:$("tNum"),tMrn:$("tMrn"),tTs:$("tTs"),tThanks:$("tThanks")};
-
-  function setLang(l){
-    lang=l; localStorage.setItem("kiosk_lang",l);
-    document.documentElement.lang=l; document.documentElement.dir=(l==="ar")?"rtl":"ltr";
-    $("ar").classList.toggle("active",l==="ar"); $("en").classList.toggle("active",l==="en");
-    const S=STR[l]; el.title.textContent=S.title; el.subtitle.textContent=S.sub; el.btn.textContent=S.btn; el.nextLabel.textContent=S.next;
-    pt.tTitle.textContent=S.tTitle; pt.tSub.textContent=S.tSub; pt.tThanks.textContent=S.tThanks;
-  }
-  $("ar").onclick=()=>setLang("ar"); $("en").onclick=()=>setLang("en"); setLang(lang);
-
-  // Firebase
-  const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
-  const db=firebase.database();
-  const ROOT="cardiac_demo";
+  const db = firebase.database();
 
-  // show next number (counter+1)
-  db.ref(ROOT+"/counter").on("value",s=>{
-    const v=s.val()||0; el.nextNum.textContent=(v%1000)+1;
-  });
+  // ------------ عناصر DOM ------------
+  const form = document.getElementById('form');
+  const mrnInput = document.getElementById('mrn');
+  const err = document.getElementById('err');
+  const btnAr = document.getElementById('btnAr');
+  const btnEn = document.getElementById('btnEn');
 
-  function validMRN(v){return /^[0-9]{4,}$/.test(v);} // >=4 digits, digits only
-  function showErr(m){el.err.textContent=m||"";}
+  const tNum = document.getElementById('tNum');
+  const tMrn = document.getElementById('tMrn');
+  const tWait = document.getElementById('tWait');
+  const tTs = document.getElementById('tTs');
 
-  function nextNumber(){
-    return new Promise((res,rej)=>{
-      const r=db.ref(ROOT+"/counter");
-      r.transaction(c=>{
-        let v=(typeof c==="number"?c:0)+1; if(v>1000) v=1; return v;
-      },(e,ok,s)=>{ if(e||!ok) rej(e||new Error("txn")); else res(s.val()); });
-    });
+  // ترجمة بسيطة
+  const copy = {
+    ar:{
+      title:"مرحبًا",
+      sub:"فضلاً اكتب رقم الملف (MRN)",
+      mrn:"رقم الملف (MRN)",
+      print:"طباعة التذكرة",
+      err:"فضلاً أدخل MRN صحيحًا (أرقام فقط، 4 خانات فأكثر).",
+      wait:"عدد المنتظرين: ",
+      thanks:"شكرًا لانتظارك",
+      queue:"رقم الانتظار"
+    },
+    en:{
+      title:"Welcome",
+      sub:"Please enter your MRN",
+      mrn:"MRN",
+      print:"Print Ticket",
+      err:"Please enter a valid MRN (digits only, 4+).",
+      wait:"No. of people waiting: ",
+      thanks:"Thank you for waiting",
+      queue:"Your queuing number"
+    }
+  };
+  let lang = 'ar';
+  function applyLang(){
+    const c = copy[lang];
+    document.getElementById('title').textContent = c.title;
+    document.getElementById('subtitle').textContent = c.sub;
+    document.getElementById('lblMrn').textContent = c.mrn;
+    document.getElementById('btnPrint').textContent = c.print;
+    document.getElementById('tTitle').textContent = c.title;
+    document.getElementById('tSub').textContent = (lang==='ar'?'رقم الانتظار':c.queue);
+    document.getElementById('tThanks').textContent = c.thanks;
+    document.documentElement.lang = (lang==='ar'?'ar':'en');
+    document.documentElement.dir = (lang==='ar'?'rtl':'ltr');
+    btnAr.classList.toggle('active', lang==='ar');
+    btnEn.classList.toggle('active', lang==='en');
+  }
+  btnAr.onclick = ()=>{ lang='ar'; applyLang(); };
+  btnEn.onclick = ()=>{ lang='en'; applyLang(); };
+  applyLang();
+
+  // ------------ حساب عدد المنتظرين (أخضر ولم يُخدم) ------------
+  let printed = {}, served = {};
+  db.ref(`${ROOT}/printed`).on("value", s=>{ printed = s.val()||{}; });
+  db.ref(`${ROOT}/served`).on("value", s=>{ served = s.val()||{}; });
+
+  function waitingCount(){
+    let c=0;
+    for(const k in printed){
+      if(printed[k] && !served[k]) c++;
+    }
+    return c;
   }
 
-  $("frm").addEventListener("submit", async (e)=>{
+  // ------------ احصل على الرقم التالي (1..1000) ------------
+  async function getNextNumber(){
+    const snap = await db.ref(`${ROOT}/counter`).get();
+    let n = (snap.exists()? Number(snap.val()) : 0) + 1;
+    if(n>1000) n=1;
+    await db.ref(`${ROOT}/counter`).set(n);
+    return n;
+  }
+
+  // ------------ طباعة التذكرة ------------
+  function printTicket(num, mrn, wait){
+    // جهّز بيانات التذكرة
+    tNum.textContent = num;
+    tMrn.textContent = mrn ? mrn : "";
+    tWait.textContent = (lang==='ar' ? copy.ar.wait : copy.en.wait) + String(wait);
+    const d = new Date();
+    const ts = d.toLocaleString(lang==='ar'?'ar-SA':'en-US', { hour12:false });
+    tTs.textContent = ts;
+
+    const ticket = document.getElementById('ticket');
+    ticket.style.display = 'block';
+    setTimeout(()=>{ window.print(); }, 30);
+    window.onafterprint = ()=>{ ticket.style.display = 'none'; };
+  }
+
+  // ------------ تحقق MRN ------------
+  function validMrn(v){
+    return /^\d{4,}$/.test(v.trim());
+  }
+
+  // ------------ عند الضغط طباعة ------------
+  form.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const mrn=(el.mrn.value||"").trim();
-    if(!validMRN(mrn)){ showErr(STR[lang].err); el.mrn.focus(); return; }
-    showErr("");
+    const mrn = mrnInput.value.trim();
 
-    try{
-      const n = await nextNumber();          // 1..1000
-      await db.ref(`${ROOT}/mrn/${n}`).set(mrn);
-      await db.ref(`${ROOT}/printed/${n}`).set(true);   // ✅ turn grid green
-      // NOTE: we DO NOT set /latest here, so operator “Now Serving” doesn't change
-      // await db.ref(`${ROOT}/latest`).set({number:n,ts:Date.now(),mrn});  <-- removed
+    if(!validMrn(mrn)){
+      err.textContent = (lang==='ar'?copy.ar.err:copy.en.err);
+      mrnInput.focus();
+      return;
+    }
+    err.textContent = "";
 
-      // fill print ticket and print
-      pt.tNum.textContent=n; pt.tMrn.textContent=mrn;
-      pt.tTs.textContent=new Date().toLocaleString(lang==="ar"?"ar-SA":"en-US");
-      setTimeout(()=>window.print(),50);
-      setTimeout(()=>{ el.mrn.value=""; el.mrn.focus(); }, 200);
-    }catch(err){ console.error(err); showErr(lang==="ar"?"تعذر إصدار التذكرة":"Could not issue ticket"); }
+    // الرقم التالي
+    const num = await getNextNumber();
+
+    // سجّل في فايربيس: مطبوع + MRN
+    const updates = {};
+    updates[`${ROOT}/printed/${num}`] = true;
+    updates[`${ROOT}/mrn/${num}`]     = { value: mrn, ts: Date.now() };
+    await db.ref().update(updates);
+
+    // احسب المنتظرين وقت الطباعة
+    const wait = waitingCount();
+
+    // اطبع
+    printTicket(num, mrn, wait);
+
+    // تفريغ الخانة
+    mrnInput.value = "";
   });
 
-  window.onload=()=>el.mrn.focus();
 })();
 </script>
 </body>
