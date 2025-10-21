@@ -1,172 +1,67 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Cardiac Pharmacy Tickets</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cardiac Kiosk</title>
 
 <style>
-  body {
-    font-family: "Tahoma","Segoe UI","Arial",sans-serif;
-    background:#f8fafc;
-    margin:0;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    text-align:center;
-    direction:rtl;
-  }
+  :root{--blue:#2563eb;--ink:#0f172a;--muted:#6b7280}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f7fb;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
+  .wrap{margin:auto;width:min(960px,96vw);background:#eef2f7;padding:28px;border-radius:18px}
+  .sub{font-size:18px;text-align:center;color:#334155;margin-bottom:6px}
+  h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0;text-align:center}
+  form{display:flex;flex-direction:column;gap:14px;align-items:center}
+  label{font-weight:700}
+  input{width:100%;max-width:680px;padding:16px 18px;font-size:22px;border-radius:14px;border:2px solid #cbd5e1;letter-spacing:1px;text-align:center}
+  input::placeholder{color:#9aa3b2;opacity:.9;text-align:center}
+  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+  .btn{background:var(--blue);color:#fff;font-weight:800;border:0;padding:14px 22px;border-radius:14px;font-size:22px;cursor:pointer}
+  .next{margin-top:8px;text-align:center;color:var(--muted)}
+  .next b{color:#111}
+  .err{min-height:22px;color:#dc2626;text-align:center}
 
-  h1 {
-    font-size:36px;
-    margin-bottom:10px;
-    color:#111;
-  }
-
-  h2 {
-    font-size:18px;
-    color:#444;
-    margin-top:0;
-    margin-bottom:30px;
-  }
-
-  input[type="number"] {
-    font-size:20px;
-    padding:10px 15px;
-    border:2px solid #ccc;
-    border-radius:10px;
-    width:220px;
-    text-align:center;
-    margin-bottom:20px;
-  }
-
-  button {
-    font-size:22px;
-    padding:14px 28px;
-    background:#007bff;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-  }
-
-  button:hover { background:#0056b3; }
-
-  #err {
-    margin-top:12px;
-    font-size:16px;
-    color:#e11d48;
-    min-height:24px;
-  }
-
-  #nextNum {
-    font-size:18px;
-    color:#444;
-    margin-top:15px;
-  }
-
-  /* تذكرة الطباعة */
-  @media print {
-    @page {
-      size: 80mm auto;   /* العرض ثابت، الطول تلقائي */
-      margin: 0;
-    }
-
-    body > * { display: none !important; }
-
-    #ticket {
-      display: block !important;
-      width: 100%;
-      padding: 10mm 6mm;
-      font-family: "Tahoma", "Segoe UI", "Arial", sans-serif;
-      direction: rtl;
-      text-align: center;
-    }
-
-    #tTitle {
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 16pt;
-      margin: 0 0 6mm;
-    }
-
-    #tHello {
-      display: block;
-      width: 100%;
-      font-size: 30pt;
-      line-height: 1.1;
-      margin: 0 0 4mm;
-    }
-
-    #tSub {
-      display: block;
-      width: 100%;
-      font-size: 16pt;
-      line-height: 1.2;
-      margin: 0 0 6mm;
-    }
-
-    #tNum {
-      display: block;
-      width: 100%;
-      font-size: 56pt;
-      line-height: 1.0;
-      margin: 0 0 6mm;
-    }
-
-    #tMrn {
-      display: block;
-      width: 100%;
-      font-size: 14pt;
-      margin: 0 0 3mm;
-    }
-
-    #tWait {
-      display: block;
-      width: 100%;
-      font-size: 13pt;
-      margin: 0 0 5mm;
-    }
-
-    #tLine {
-      height: 2px;
-      background: #000;
-      margin: 3mm 0;
-    }
-
-    #tThanks {
-      display: block;
-      width: 100%;
-      font-size: 20pt;
-      margin: 2mm 0 3mm;
-    }
-
-    #tTs {
-      display: block;
-      width: 100%;
-      font-size: 11pt;
-      margin: 0;
-    }
+  /* ===== قالب الطباعة ===== */
+  @media print{
+    @page{ size:80mm auto; margin:0 }
+    body > *{ display:none !important }
+    #ticket{ display:block !important;width:100%;padding:10mm 6mm;font-family:"Tahoma","Segoe UI","Arial",sans-serif;direction:rtl;text-align:center }
+    #tTitle{ font-family:Arial,Helvetica,sans-serif;font-size:16pt;margin:0 0 6mm }
+    #tHello{ display:block;width:100%;font-size:30pt;line-height:1.1;margin:0 0 4mm }
+    #tSub{   display:block;width:100%;font-size:14pt;line-height:1.2;margin:0 0 6mm }
+    #tNum{   display:block;width:100%;font-size:56pt;line-height:1.0;margin:0 0 6mm }
+    #tMrn{   display:block;width:100%;font-size:14pt;margin:0 0 3mm }
+    #tWait{  display:block;width:100%;font-size:13pt;margin:0 0 5mm }
+    #tLine{  height:2px;background:#000;margin:3mm 0 }
+    #tThanks{display:block;width:100%;font-size:20pt;margin:2mm 0 3mm }
+    #tTs{    display:block;width:100%;font-size:11pt;margin:0 }
   }
 </style>
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
+  <div class="wrap">
+    <div class="sub">Cardiac Pharmacy Ticket</div>
+    <h1>مرحبًا</h1>
 
-  <h1>مرحبًا</h1>
-  <h2>الرجاء إدخال رقم الملف (MRN)</h2>
+    <form id="f" autocomplete="off">
+      <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
+      <input id="mrn" inputmode="numeric" placeholder="MRN" />
+      <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
+      <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
+      <div class="err" id="err"></div>
+    </form>
+  </div>
 
-  <input id="mrn" type="number" placeholder="رقم الملف" inputmode="numeric" />
-
-  <button id="printBtn">طباعة التذكرة / Print Ticket</button>
-  <div id="err"></div>
-  <div id="nextNum">الرقم التالي: <span id="nxt">1</span></div>
-
-  <!-- قالب التذكرة -->
-  <div id="ticket" style="display:none;">
+  <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
+  <div id="ticket" style="display:none">
     <div id="tTitle">Cardiac Pharmacy Ticket</div>
     <div id="tHello">مرحبًا</div>
-    <div id="tSub">رقم الانتظار</div>
+    <div id="tSub">رقمك هو</div>
     <div id="tNum"></div>
     <div id="tMrn"></div>
     <div id="tWait"></div>
@@ -175,68 +70,82 @@
     <div id="tTs"></div>
   </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
 (function(){
+  // ===== Firebase =====
   const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
   const db=firebase.database();
   const ROOT="cardiac_demo";
 
-  const mrn=document.getElementById("mrn");
-  const err=document.getElementById("err");
-  const nxt=document.getElementById("nxt");
-  const tNum=document.getElementById("tNum");
-  const tMrn=document.getElementById("tMrn");
-  const tWait=document.getElementById("tWait");
-  const tTs=document.getElementById("tTs");
+  // عناصر
+  const f=document.getElementById('f');
+  const mrnInput=document.getElementById('mrn');
+  const err=document.getElementById('err');
+  const nextNumEl=document.getElementById('nextNum');
 
-  db.ref(`${ROOT}/latestPrinted`).on("value",s=>{
-    nxt.textContent=s.val()||1;
+  // أرقام عربية ← إنجليزية (حتى لو كتبو ١٢٣)
+  const dMap={"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
+  const toEN=s=>s.replace(/[٠-٩]/g,d=>dMap[d]).replace(/[^\d]/g,"");
+
+  // عرض الرقم التالي — إصلاح [object Object]
+  db.ref(`${ROOT}/next`).on("value",s=>{
+    const v = s && s.val();
+    nextNumEl.textContent = v==null? 1 : v;   // إن ما كان موجود نبدأ من 1
   });
 
-  document.getElementById("printBtn").onclick=async()=>{
-    const val=mrn.value.trim();
-    if(!/^[0-9]{4,}$/.test(val)){
-      err.textContent="فضلاً أدخل MRN صحيحًا";
-      return;
-    }
+  // زر الطباعة
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
     err.textContent="";
+    const mrn = toEN(mrnInput.value.trim());
+    if(mrn.length < 3){ err.textContent=""; return; } // تحقق داخلي بدون رسائل مزعجة
 
-    const snap=await db.ref(`${ROOT}/latestPrinted`).get();
-    let n=snap.exists()?snap.val()+1:1;
-    if(n>1000) n=1;
+    // 1) خذي رقم التذكرة الحالي atomically
+    const nRef = db.ref(`${ROOT}/next`);
+    const tx = await nRef.transaction(cur => (cur==null?1:cur)+1);
+    const ticketNum = (tx.snapshot.val()||1) - 1;  // الرقم الذي يُطبع الآن
 
-    await db.ref(`${ROOT}/printed/${n}`).set(true);
-    await db.ref(`${ROOT}/mrn/${n}`).set(val);
-    await db.ref(`${ROOT}/latestPrinted`).set(n);
+    // 2) سجلي أنه مطبوع + احفظي الـ MRN + آخر مطبوع
+    await Promise.all([
+      db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
+      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
+      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
+    ]);
 
-    const allPrinted=await db.ref(`${ROOT}/printed`).get();
-    const allServed=await db.ref(`${ROOT}/served`).get();
-    const printed=allPrinted.val()||{};
-    const served=allServed.val()||{};
-    const waiting=Object.keys(printed).filter(k=>!served[k]&&k<n).length;
+    // 3) احسب المنتظرين: مطبوع ولم يُخدم ولم NoShow ورقمه أقل من رقم هذا المريض
+    const [sp, ss, sn] = await Promise.all([
+      db.ref(`${ROOT}/printed`).get(),
+      db.ref(`${ROOT}/served`).get(),
+      db.ref(`${ROOT}/noshow`).get()
+    ]);
+    const P=sp.val()||{}, S=ss.val()||{}, N=sn.val()||{};
+    const waiting = Object.keys(P).filter(k => {
+      const n=parseInt(k,10);
+      return n < ticketNum && !S[k] && !N[k];
+    }).length;
 
-    tNum.textContent=n;
-    tMrn.textContent="MRN: "+val;
+    // 4) جهزي التذكرة
+    document.getElementById('tNum').textContent = ticketNum;
+    document.getElementById('tMrn').textContent = `رقم الملف: ${mrn}`;
+    document.getElementById('tWait').textContent = waiting===0
+      ? 'لا يوجد أشخاص في الانتظار'
+      : waiting===1 ? 'أمامك شخص واحد في الانتظار'
+      : waiting===2 ? 'أمامك شخصان في الانتظار'
+      : `أمامك ${waiting} أشخاص في الانتظار`;
 
-    let waitText="";
-    if(waiting===0) waitText="لا يوجد أحد أمامك";
-    else if(waiting===1) waitText="أمامك شخص واحد";
-    else if(waiting===2) waitText="أمامك شخصان";
-    else waitText=`أمامك ${waiting} أشخاص`;
-    tWait.textContent=waitText;
+    const now = new Date();
+    const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
+    const ampm = now.getHours()>=12 ? 'PM':'AM';
+    const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+    document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
 
-    const ts=new Date();
-    const date=ts.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"});
-    const time=ts.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true});
-    tTs.textContent=`${date}  ${time}`;
-
-    document.getElementById("ticket").style.display="block";
+    // 5) اطبعي
     window.print();
-    document.getElementById("ticket").style.display="none";
-  };
+
+    // 6) تفريغ الحقل
+    mrnInput.value="";
+  });
 })();
 </script>
 </body>
