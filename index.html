@@ -147,10 +147,10 @@
 
     const mrn = ar2en(mrnInput.value.trim());
     if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
-    if(mrn.length < 3){
-      err.textContent = "الرجاء إدخال رقم ملف صحيح.";
-      
-    }
+    if (mrn.length < 3) {
+  err.textContent = "الرجاء إدخال رقم ملف صحيح";
+  return; // يوقف العملية بالكامل وما يطبع
+}
 
     // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
     const {next,waiting} = await pickNextAndWaiting();
