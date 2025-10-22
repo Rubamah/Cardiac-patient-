@@ -85,9 +85,10 @@
 
   <!-- هنا المستطيل -->
   <div id="callDisplay">
-    تذكرة رقم (<b id="dispNum"></b>)<br>
-    الرجاء التوجه للشباك
-  </div>
+  تذكرة رقم (<b id="dispNum"></b>)
+  <span id="winWrap" style="display:none">
+    ، الرجاء التوجه للشباك <b id="winNum"></b>
+  </span>
 </div>
 
   <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
@@ -232,20 +233,53 @@ window.print();
 </script>
   <script>
 (function(){
-  const ROOT="cardiac_demo"; // نفس الجذر
-  const disp=document.getElementById('callDisplay');
-  const dispNum=document.getElementById('dispNum');
-  const db=firebase.database();
+  const ROOT = "cardiac_demo";              // نفس الجذر
+  const disp   = document.getElementById('callDisplay');
+  const dNum   = document.getElementById('dispNum');
+  const wWrap  = document.getElementById('winWrap');
+  const wNumEl = document.getElementById('winNum');
+  const dbRef  = firebase.database().ref;
 
-  db.ref(`${ROOT}/latest`).on('value', async s=>{
-    const v=s && s.val();
-    if(!v || !v.number){ disp.style.display='none'; return; }
-    const n=v.number;
-    const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
-    if(ns.exists()){ disp.style.display='none'; return; }
-    dispNum.textContent=n;
-    disp.style.display='block';
+  dbRef(`${ROOT}/latest`).on('value', async snap=>{
+    const v = snap && snap.val();
+
+    // لا شيء أو لا يوجد رقم؟
+    if(!v || !v.number){
+      disp.style.display = 'none';
+      return;
+    }
+
+    const n = v.number;
+
+    // إخفاء إن كان No-Show
+    const ns = await dbRef(`${ROOT}/noshow/${n}`).get();
+    if(ns.exists()){
+      disp.style.display = 'none';
+      return;
+    }
+
+    // جرّب أولاً latest.window، ثم operatorWindow كاحتياط
+    let w = (v.window !== undefined && v.window !== null && v.window !== '') ? v.window : null;
+    if (w === null){
+      const wSnap = await dbRef(`${ROOT}/operatorWindow`).get();
+      if (wSnap.exists()) w = wSnap.val();
+    }
+
+    // حدّث النصوص
+    dNum.textContent = n;
+
+    if (w !== null && w !== ''){
+      wNumEl.textContent = w;
+      wWrap.style.display = 'inline';
+    } else {
+      wWrap.style.display = 'none';
+    }
+
+    // أظهر الشريط
+    disp.style.display = 'block';
   });
+})();
+</script>
 })();
 </script>
 </body>
