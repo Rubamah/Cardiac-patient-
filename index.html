@@ -103,25 +103,6 @@
     <div id="tTs"></div>
   </div>
 <script>
-(function () {
-  const PASS = "kpcreg";                 // كلمة السر
-  const KEY  = "authOK";                 // مفتاح في sessionStorage (للجلسة الحالية فقط)
-
-  // لو ما تم التحقق في هذا التبويب من قبل
-  if (!sessionStorage.getItem(KEY)) {
-    const entered = prompt("Please enter password:");
-    if (entered === null || entered.trim() !== PASS) {
-      alert("Incorrect password. Access denied.");
-      // قفل الصفحة
-      document.body.innerHTML =
-        "<h2 style='text-align:center;margin-top:40vh;font-family:sans-serif'>Access Denied</h2>";
-      throw new Error("Blocked");        // إيقاف بقية السكربتات
-    }
-    sessionStorage.setItem(KEY, "true"); // ما يطلبها ثانية إلا بعد إغلاق التبويب
-  }
-})();
-</script>
-<script>
 (function(){
   // ===== Firebase =====
   const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
