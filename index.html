@@ -243,39 +243,35 @@ window.print();
   const dNum   = document.getElementById('dispNum');
   const wWrap  = document.getElementById('winWrap');
   const wNumEl = document.getElementById('winNum');
-  const dbRef  = firebase.database().ref;
+  const dbRef = firebase.database().ref;
+dbRef(`${ROOT}/latest`).on('value', async s=>{
+  const v = s && s.val();
 
-  dbRef(`${ROOT}/latest`).on('value', async s=>{
-    const v = s && s.val();
+  if(!v || !v.number){
+    document.getElementById('callDisplay').style.display = 'none';
+    return;
+  }
 
-    // لا شيء أو لا يوجد رقم؟
-    if(!v || !v.number){
-      disp.style.display = 'none';
-      return;
-    }
+  const n = v.number;
+  document.getElementById('dispNum').textContent = n;
 
-    // رقم التذكرة
-    const n = v.number;
-    dNum.textContent = n;
+  // إخفاء لو No-Show
+  const ns = await dbRef(`${ROOT}/noshow/${n}`).get();
+  if(ns.exists()){
+    document.getElementById('callDisplay').style.display = 'none';
+    return;
+  }
 
-    // إخفاء إن كان No-Show
-    const ns = await dbRef(`${ROOT}/noshow/${n}`).get();
-    if(ns.exists()){
-      disp.style.display = 'none';
-      return;
-    }
+  // رقم الشباك
+  if (v.window) {
+    document.getElementById('winNum').textContent = v.window;
+    document.getElementById('winWrap').style.display = 'inline';
+  } else {
+    document.getElementById('winWrap').style.display = 'none';
+  }
 
-    // رقم الشباك (إن وُجد)
-    if (v.window) {
-      wNumEl.textContent = v.window;
-      wWrap.style.display = 'inline';
-    } else {
-      wWrap.style.display = 'none';
-    }
-
-    // أظهر المستطيل
-    disp.style.display = 'block';
-  });
+  document.getElementById('callDisplay').style.display = 'block';
+});
 })();
 </script>
 <script>
