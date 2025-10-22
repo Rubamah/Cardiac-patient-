@@ -192,15 +192,14 @@
 
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
-const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
-
-document.getElementById('tNum').textContent = enNum(ticketNum);
-document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
-document.getElementById('tWait').textContent = waiting === 0
-  ? 'لا يوجد أحد أمامك'
-  : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
-  : waiting === 2 ? 'أمامك شخصان في الانتظار'
-  : `أمامك ${enNum(waiting)} أشخاص في الانتظار`;
+// 4) جهزي التذكرة (تحويل الأرقام للإنجليزية باستخدام ar2en)
+document.getElementById('tNum').textContent = ar2en(ticketNum);
+document.getElementById('tMrn').textContent = `رقم الملف: ${ar2en(mrn)}`;
+document.getElementById('tWait').textContent =
+  waiting === 0 ? 'لا يوجد أحد أمامك' :
+  waiting === 1 ? 'أمامك شخص واحد في الانتظار' :
+  waiting === 2 ? 'أمامك شخصان في الانتظار' :
+  `أمامك ${ar2en(waiting)} أشخاص في الانتظار`;
 
 const now = new Date();
 const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
@@ -219,13 +218,6 @@ window.print();
 </script>
   <script>
 (function(){
-  const ROOT="cardiac_demo"; // نفس الجذر
-  const disp=document.getElementById('callDisplay');
-  const dispNum=document.getElementById('dispNum');
-  const db=firebase.database();
-
-  // ===== عرض النداء في المستطيل الأسود مع رقم الشباك =====
-(function(){
   const ROOT = "cardiac_demo";              // نفس الجذر
   const disp   = document.getElementById('callDisplay');
   const dNum   = document.getElementById('dispNum');
@@ -235,6 +227,7 @@ window.print();
 
   dbRef(`${ROOT}/latest`).on('value', async s=>{
     const v = s && s.val();
+
     // لا شيء أو لا يوجد رقم؟
     if(!v || !v.number){
       disp.style.display = 'none';
@@ -245,24 +238,24 @@ window.print();
     const n = v.number;
     dNum.textContent = n;
 
-    // اخفاء إذا كان No-Show
+    // إخفاء إن كان No-Show
     const ns = await dbRef(`${ROOT}/noshow/${n}`).get();
     if(ns.exists()){
       disp.style.display = 'none';
       return;
     }
 
-  // رقم الشباك (إذا موجود)
-  if (v.window) {
-    wNumEl.textContent = v.window;
-    wWrap.style.display = 'inline';
-  } else {
-    wWrap.style.display = 'none';
-  }
+    // رقم الشباك (إن وُجد)
+    if (v.window) {
+      wNumEl.textContent = v.window;
+      wWrap.style.display = 'inline';
+    } else {
+      wWrap.style.display = 'none';
+    }
 
-  // أظهر المستطيل
-  disp.style.display = 'block';
-});
+    // أظهر المستطيل
+    disp.style.display = 'block';
+  });
 })();
 </script>
 <script>
