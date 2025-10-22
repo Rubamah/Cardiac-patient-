@@ -102,7 +102,21 @@
     <div id="tThanks">شكرًا لانتظارك</div>
     <div id="tTs"></div>
   </div>
-
+<body>
+<script>
+(function(){
+  const PASS = "kpcreg";
+  if(!sessionStorage.getItem("authOK")){
+    const p = prompt("Please enter password:");
+    if(p !== PASS){
+      alert("Incorrect password. Access denied.");
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:40vh'>Access Denied</h2>";
+      throw new Error("Blocked"); // يوقف بقية الكود
+    }
+    sessionStorage.setItem("authOK","true");
+  }
+})();
+</script>
 <script>
 (function(){
   // ===== Firebase =====
