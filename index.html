@@ -163,20 +163,26 @@
       db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
     ]);
 
-    // حضّري التذكرة
-    document.getElementById('tNum').textContent = toAr(ticketNum);
-    document.getElementById('tMrn').textContent = `رقم الملف: ${toAr(mrn)}`;
-    document.getElementById('tWait').textContent = waitingText(waiting);
+// 4) جهزي التذكرة
+// نحول الأرقام إلى إنجليزية بشكل أكيد
+const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
 
-    const now=new Date();
-    const h = now.getHours()%12 || 12;
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const ampm = now.getHours()>=12 ? 'PM':'AM';
-    const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
-    document.getElementById('tTs').textContent = `${h}:${m}${ampm} , ${date}`;
+document.getElementById('tNum').textContent = enNum(ticketNum);
+document.getElementById('tMrn').textContent = `File No: ${enNum(mrn)}`;
+document.getElementById('tWait').textContent = waiting === 0
+  ? 'No people waiting'
+  : waiting === 1 ? '1 person waiting'
+  : waiting === 2 ? '2 people waiting'
+  : `${waiting} people waiting`;
 
-    // اطبعي
-    window.print();
+const now = new Date();
+const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
+const ampm = now.getHours()>=12 ? 'PM':'AM';
+const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
+
+// 5) اطبعي
+window.print();
 
     // نفرّغ الحقل ونحدّث المعاينة
     mrnInput.value='';
