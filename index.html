@@ -164,16 +164,16 @@
     ]);
 
 // 4) جهزي التذكرة
-// نحول الأرقام إلى إنجليزية بشكل أكيد
+// نحول الأرقام إلى إنجليزية فقط
 const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
-document.getElementById('tMrn').textContent = `File No: ${enNum(mrn)}`;
+document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
 document.getElementById('tWait').textContent = waiting === 0
-  ? 'No people waiting'
-  : waiting === 1 ? '1 person waiting'
-  : waiting === 2 ? '2 people waiting'
-  : `${waiting} people waiting`;
+  ? 'لا يوجد أحد أمامك'
+  : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
+  : waiting === 2 ? 'أمامك شخصان في الانتظار'
+  : `أمامك ${enNum(waiting)} أشخاص في الانتظار`;
 
 const now = new Date();
 const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
