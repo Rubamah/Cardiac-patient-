@@ -85,67 +85,95 @@
   const err=document.getElementById('err');
   const nextNumEl=document.getElementById('nextNum');
 
-  // أرقام عربية ← إنجليزية (حتى لو كتبو ١٢٣)
-  const dMap={"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
-  const toEN=s=>s.replace(/[٠-٩]/g,d=>dMap[d]).replace(/[^\d]/g,"");
+  // تحويل الأرقام العربية إلى إنجليزية + تنظيف
+  const ar2en = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d]/g,'');
+  // تحويل إنجليزي إلى عربي لو احتجنا
+  const toAr = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 
-  // عرض الرقم التالي — إصلاح [object Object]
-  db.ref(`${ROOT}/next`).on("value",s=>{
-    const v = s && s.val();
-    nextNumEl.textContent = v==null? 1 : v;   // إن ما كان موجود نبدأ من 1
-  });
+  // نص “أمامك …” بصياغة صحيحة
+  function waitingText(n){
+    if(n===0) return 'لا يوجد أشخاص في الانتظار';
+    if(n===1) return 'أمامك شخص واحد في الانتظار';
+    if(n===2) return 'أمامك شخصان في الانتظار';
+    return `أمامك ${toAr(n)} أشخاص في الانتظار`;
+  }
 
-  // زر الطباعة
-  f.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    err.textContent="";
-    const mrn = toEN(mrnInput.value.trim());
-    if(mrn.length < 3){ err.textContent=""; return; } // تحقق داخلي بدون رسائل مزعجة
-
-    // 1) خذي رقم التذكرة الحالي atomically
-    const nRef = db.ref(`${ROOT}/next`);
-    const tx = await nRef.transaction(cur => (cur==null?1:cur)+1);
-    const ticketNum = (tx.snapshot.val()||1) - 1;  // الرقم الذي يُطبع الآن
-
-    // 2) سجلي أنه مطبوع + احفظي الـ MRN + آخر مطبوع
-    await Promise.all([
-      db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
-      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
-      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
-    ]);
-
-    // 3) احسب المنتظرين: مطبوع ولم يُخدم ولم NoShow ورقمه أقل من رقم هذا المريض
+  // يحسب next & waiting (printed && !served && !noshow)
+  async function pickNextAndWaiting(){
     const [sp, ss, sn] = await Promise.all([
       db.ref(`${ROOT}/printed`).get(),
       db.ref(`${ROOT}/served`).get(),
       db.ref(`${ROOT}/noshow`).get()
     ]);
     const P=sp.val()||{}, S=ss.val()||{}, N=sn.val()||{};
-    const waiting = Object.keys(P).filter(k => {
-      const n=parseInt(k,10);
-      return n < ticketNum && !S[k] && !N[k];
-    }).length;
 
-    // 4) جهزي التذكرة
-    document.getElementById('tNum').textContent = ticketNum;
-    document.getElementById('tMrn').textContent = `رقم الملف: ${mrn}`;
-    document.getElementById('tWait').textContent = waiting===0
-      ? 'لا يوجد أشخاص في الانتظار'
-      : waiting===1 ? 'أمامك شخص واحد في الانتظار'
-      : waiting===2 ? 'أمامك شخصان في الانتظار'
-      : `أمامك ${waiting} أشخاص في الانتظار`;
+    // next هو أول رقم غير موجود في أي من الجداول
+    let next=1;
+    while(next<=1000 && (P[next]||S[next]||N[next])) next++;
 
-    const now = new Date();
-    const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
+    // المنتظرين: مطبوع قبل next وغير مخدّم وغير NoShow
+    let waiting=0;
+    for(let i=1;i<next;i++){
+      if(P[i] && !S[i] && !N[i]) waiting++;
+    }
+    return {next,waiting};
+  }
+
+  // معاينة الرقم التالي
+  async function updateNextPreview(){
+    const {next}=await pickNextAndWaiting();
+    nextNumEl.textContent = toAr(next);
+  }
+  updateNextPreview();
+
+  // مستمع Restart من الأوبريتور
+  db.ref(`${ROOT}/resetFlag`).on('value', s=>{
+    if(!s.exists()) return;
+    mrnInput.value='';
+    err.textContent='';
+    updateNextPreview();
+  });
+
+  // إرسال/طباعة
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    err.textContent='';
+
+    const mrn = ar2en(mrnInput.value.trim());
+    if(mrn.length < 3){
+      err.textContent = "الرجاء إدخال رقم صحيح.";
+      
+    }
+
+    // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
+    const {next,waiting} = await pickNextAndWaiting();
+    const ticketNum = next;
+
+    // سجّلي مطبوع + MRN + latestPrinted
+    await Promise.all([
+      db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
+      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
+      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
+    ]);
+
+    // حضّري التذكرة
+    document.getElementById('tNum').textContent = toAr(ticketNum);
+    document.getElementById('tMrn').textContent = `رقم الملف: ${toAr(mrn)}`;
+    document.getElementById('tWait').textContent = waitingText(waiting);
+
+    const now=new Date();
+    const h = now.getHours()%12 || 12;
+    const m = String(now.getMinutes()).padStart(2,'0');
     const ampm = now.getHours()>=12 ? 'PM':'AM';
     const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
-    document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
+    document.getElementById('tTs').textContent = `${h}:${m}${ampm} , ${date}`;
 
-    // 5) اطبعي
+    // اطبعي
     window.print();
 
-    // 6) تفريغ الحقل
-    mrnInput.value="";
+    // نفرّغ الحقل ونحدّث المعاينة
+    mrnInput.value='';
+    updateNextPreview();
   });
 })();
 </script>
