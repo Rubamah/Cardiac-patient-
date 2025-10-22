@@ -233,5 +233,22 @@ window.print();
   });
 })();
 </script>
+<script>
+(function(){
+  const pass = "kpcreg"; // ← كلمة السر
+  let entered = localStorage.getItem("authOK");
+
+  if(!entered){
+    let userPass = prompt("Please enter password:");
+    if(userPass !== pass){
+      alert("Incorrect password. Access denied.");
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:40vh;font-family:sans-serif;'>Access Denied</h2>";
+      throw new Error("Access blocked");
+    } else {
+      localStorage.setItem("authOK", "true");
+    }
+  }
+})();
+</script>
 </body>
 </html>
