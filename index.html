@@ -78,6 +78,10 @@
       <div class="sub">الرجاء الانتظار قليلًا لحين طباعة التذكرة</div>
     </form>
   </div>
+  <div id="callDisplay">
+  تذكرة رقم (<b id="dispNum"></b>)<br>
+  الرجاء التوجه للشباك
+</div>
 
   <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
   <div id="ticket" style="display:none">
@@ -202,6 +206,24 @@ window.print();
     // نفرّغ الحقل ونحدّث المعاينة
     mrnInput.value='';
     updateNextPreview();
+  });
+})();
+</script>
+  <script>
+(function(){
+  const ROOT="cardiac_demo"; // نفس الجذر
+  const disp=document.getElementById('callDisplay');
+  const dispNum=document.getElementById('dispNum');
+  const db=firebase.database();
+
+  db.ref(`${ROOT}/latest`).on('value', async s=>{
+    const v=s && s.val();
+    if(!v || !v.number){ disp.style.display='none'; return; }
+    const n=v.number;
+    const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
+    if(ns.exists()){ disp.style.display='none'; return; }
+    dispNum.textContent=n;
+    disp.style.display='block';
   });
 })();
 </script>
