@@ -140,8 +140,9 @@
     err.textContent='';
 
     const mrn = ar2en(mrnInput.value.trim());
+    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
     if(mrn.length < 3){
-      err.textContent = "الرجاء إدخال رقم صحيح.";
+      err.textContent = "الرجاء إدخال رقم ملف صحيح.";
       
     }
 
