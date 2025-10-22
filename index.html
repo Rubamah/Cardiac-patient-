@@ -252,11 +252,17 @@ window.print();
       return;
     }
 
-    // رقم الشباك (إذا موجود)
-    if(v.window){
-      wNumEl.textContent = v.window;
-      wWrap.style.display = 'inline';
-    }else{
+  // رقم الشباك (إذا موجود)
+  if (v.window) {
+    wNumEl.textContent = v.window;
+    wWrap.style.display = 'inline';
+  } else {
+    wWrap.style.display = 'none';
+  }
+
+  // أظهر المستطيل
+  disp.style.display = 'block';
+});
 })();
 </script>
 <script>
