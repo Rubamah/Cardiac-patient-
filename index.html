@@ -83,10 +83,12 @@
   </form>
 
   <!-- هنا المستطيل -->
-  <div id="callDisplay">
-    تذكرة رقم (<b id="dispNum"></b>)<br>
-    الرجاء التوجه للشباك
-  </div>
+  <!-- هنا المستطيل -->
+<div id="callDisplay">
+  تذكرة رقم (<b id="dispNum"></b>)
+  <span id="winWrap" style="display:none">
+    ، الرجاء التوجه إلى شباك <b id="winNum"></b>
+  </span>
 </div>
 
   <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
@@ -222,15 +224,39 @@ window.print();
   const dispNum=document.getElementById('dispNum');
   const db=firebase.database();
 
-  db.ref(`${ROOT}/latest`).on('value', async s=>{
-    const v=s && s.val();
-    if(!v || !v.number){ disp.style.display='none'; return; }
-    const n=v.number;
-    const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
-    if(ns.exists()){ disp.style.display='none'; return; }
-    dispNum.textContent=n;
-    disp.style.display='block';
-  });
+  // ===== عرض النداء في المستطيل الأسود مع رقم الشباك =====
+(function(){
+  const ROOT = "cardiac_demo";              // نفس الجذر
+  const disp   = document.getElementById('callDisplay');
+  const dNum   = document.getElementById('dispNum');
+  const wWrap  = document.getElementById('winWrap');
+  const wNumEl = document.getElementById('winNum');
+  const dbRef  = firebase.database().ref;
+
+  dbRef(`${ROOT}/latest`).on('value', async s=>{
+    const v = s && s.val();
+    // لا شيء أو لا يوجد رقم؟
+    if(!v || !v.number){
+      disp.style.display = 'none';
+      return;
+    }
+
+    // رقم التذكرة
+    const n = v.number;
+    dNum.textContent = n;
+
+    // اخفاء إذا كان No-Show
+    const ns = await dbRef(`${ROOT}/noshow/${n}`).get();
+    if(ns.exists()){
+      disp.style.display = 'none';
+      return;
+    }
+
+    // رقم الشباك (إذا موجود)
+    if(v.window){
+      wNumEl.textContent = v.window;
+      wWrap.style.display = 'inline';
+    }else{
 })();
 </script>
 <script>
