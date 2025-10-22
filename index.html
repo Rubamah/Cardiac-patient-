@@ -54,11 +54,10 @@
   font-weight: 700;
   width: 100%;
   max-width: 680px;
-  margin: 60px auto 20px; /* ↑ أضفنا فراغ فوق وتحت */
+  margin: 40px auto 40px; /* مسافة متوازنة فوق وتحت */
   line-height: 1.5;
   font-size: clamp(28px, 5vw, 44px);
-  position: relative;
-  z-index: 1;
+  box-sizing: border-box;
 }
 #callDisplay b {
   font-weight: 800;
@@ -70,22 +69,24 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
-  <div class="wrap">
-    <div class="sub">Cardiac Pharmacy Ticket</div>
-    <h1>مرحبًا</h1>
+<div class="wrap">
+  <div class="sub">Cardiac Pharmacy Ticket</div>
+  <h1>مرحبًا</h1>
 
-    <form id="f" autocomplete="off">
-      <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
-      <input id="mrn" inputmode="numeric" placeholder="MRN" />
-      <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
-      <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
-      <div class="err" id="err"></div>
-      <div class="sub">الرجاء الانتظار قليلًا لحين طباعة التذكرة</div>
-    </form>
-  </div>
+  <form id="f" autocomplete="off">
+    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
+    <input id="mrn" inputmode="numeric" placeholder="MRN" />
+    <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
+    <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
+    <div class="err" id="err"></div>
+    <div class="sub">الرجاء الانتظار قليلًا لحين طباعة التذكرة</div>
+  </form>
+
+  <!-- هنا المستطيل -->
   <div id="callDisplay">
-  تذكرة رقم (<b id="dispNum"></b>)<br>
-  الرجاء التوجه للشباك
+    تذكرة رقم (<b id="dispNum"></b>)<br>
+    الرجاء التوجه للشباك
+  </div>
 </div>
 
   <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
