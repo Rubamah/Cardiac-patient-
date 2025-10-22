@@ -30,19 +30,36 @@
 
   /* ===== قالب الطباعة ===== */
   @media print{
-    @page{ size:80mm auto; margin:0 }
-    body > *{ display:none !important }
-    #ticket{ display:block !important;width:100%;padding:10mm 6mm;font-family:"Tahoma","Segoe UI","Arial",sans-serif;direction:rtl;text-align:center }
-    #tTitle{ font-family:Arial,Helvetica,sans-serif;font-size:16pt;margin:0 0 6mm }
-    #tHello{ display:block;width:100%;font-size:30pt;line-height:1.1;margin:0 0 4mm }
-    #tSub{   display:block;width:100%;font-size:14pt;line-height:1.2;margin:0 0 6mm }
-    #tNum{   display:block;width:100%;font-size:56pt;line-height:1.0;margin:0 0 6mm }
-    #tMrn{   display:block;width:100%;font-size:14pt;margin:0 0 3mm }
-    #tWait{  display:block;width:100%;font-size:13pt;margin:0 0 5mm }
-    #tLine{  height:2px;background:#000;margin:3mm 0 }
-    #tThanks{display:block;width:100%;font-size:20pt;margin:2mm 0 3mm }
-    #tTs{    display:block;width:100%;font-size:11pt;margin:0 }
+  /* مقاس رولة Epson 80mm بطول تلقائي */
+  @page{ size:80mm auto; margin:0 }
+
+  /* أخفي كل شيء في واجهة الكشك أثناء الطباعة */
+  body > *{ display:none !important; }
+
+  /* أظهر قالب التذكرة فقط */
+  #ticket{
+    display:block !important;
+    width:100%;
+    padding:10mm 6mm;
+    font-family:"Tahoma","Segoe UI","Arial",sans-serif;
+    direction:rtl;
+    text-align:center;
+    box-sizing:border-box;
   }
+
+  /* تنسيقات عناصر التذكرة (كلها IDs موجودة عندك) */
+  #tTitle{ font-family:Arial,Helvetica,sans-serif; font-size:16pt; margin:0 0 6mm; }
+  #tHello{ display:block; width:100%; font-size:30pt; line-height:1.1; margin:0 0 4mm; }
+  #tSub{   display:block; width:100%; font-size:14pt; line-height:1.2; margin:0 0 6mm; }
+  #tNum{   display:block; width:100%; font-size:56pt; line-height:1.0; margin:0 0 6mm; font-weight:900; }
+  #tMrn{   display:block; width:100%; font-size:14pt; margin:0 0 3mm; }
+  #tWait{  display:block; width:100%; font-size:13pt; margin:0 0 5mm; }
+  #tLine{  height:2px; background:#000; margin:3mm 0; }
+  #tThanks{display:block; width:100%; font-size:20pt; margin:2mm 0 3mm; }
+  #tTs{    display:block; width:100%; font-size:11pt; margin:0; }
+
+  /* لا تطبعي شريط النداء الأسود */
+
   /* شاشة النداء داخل الكيوسك (لا تُطبع) */
 #callDisplay {
   display: none;
@@ -193,18 +210,21 @@
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
 // 4) جهزي التذكرة (تحويل الأرقام للإنجليزية باستخدام ar2en)
-document.getElementById('tNum').textContent = ar2en(ticketNum);
-document.getElementById('tMrn').textContent = `رقم الملف: ${ar2en(mrn)}`;
-document.getElementById('tWait').textContent =
+document.getElementById('tHello').textContent = 'مرحبًا';
+document.getElementById('tSub').textContent   = 'رقمك هو';
+document.getElementById('tNum').textContent   = ar2en(ticketNum);
+document.getElementById('tMrn').textContent   = `رقم الملف: ${ar2en(mrn)}`;
+document.getElementById('tWait').textContent  =
   waiting === 0 ? 'لا يوجد أحد أمامك' :
   waiting === 1 ? 'أمامك شخص واحد في الانتظار' :
   waiting === 2 ? 'أمامك شخصان في الانتظار' :
   `أمامك ${ar2en(waiting)} أشخاص في الانتظار`;
 
-const now = new Date();
-const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
-const ampm = now.getHours()>=12 ? 'PM':'AM';
-const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+const now   = new Date();
+const hh    = now.getHours()%12 || 12;
+const mm    = String(now.getMinutes()).padStart(2,'0');
+const ampm  = now.getHours()>=12 ? 'PM':'AM';
+const date  = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
 document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
 
 // 5) اطبعي
