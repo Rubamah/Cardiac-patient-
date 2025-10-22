@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
@@ -82,12 +83,11 @@
     <div class="sub">الرجاء الانتظار قليلًا لحين طباعة التذكرة</div>
   </form>
 
-<!-- هنا المستطيل -->
-<div id="callDisplay">
-  تذكرة رقم (<b id="dispNum"></b>)
-  <span id="winWrap" style="display:none">
-    ، الرجاء التوجه إلى شباك <b id="winNum"></b>
-  </span>
+  <!-- هنا المستطيل -->
+  <div id="callDisplay">
+    تذكرة رقم (<b id="dispNum"></b>)<br>
+    الرجاء التوجه للشباك
+  </div>
 </div>
 
   <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
@@ -102,6 +102,7 @@
     <div id="tThanks">شكرًا لانتظارك</div>
     <div id="tTs"></div>
   </div>
+
 <script>
 (function(){
   // ===== Firebase =====
