@@ -239,15 +239,23 @@ window.print();
   const dispNum=document.getElementById('dispNum');
   const db=firebase.database();
 
-  db.ref(`${ROOT}/latest`).on('value', async s=>{
-    const v=s && s.val();
-    if(!v || !v.number){ disp.style.display='none'; return; }
-    const n=v.number;
-    const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
-    if(ns.exists()){ disp.style.display='none'; return; }
-    dispNum.textContent=n;
-    disp.style.display='block';
-  });
+db.ref(`${ROOT}/latest`).on('value', async s=>{
+  const v=s && s.val();
+  if(!v || !v.number){ disp.style.display='none'; return; }
+  const n=v.number;
+  const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
+  if(ns.exists()){ disp.style.display='none'; return; }
+
+  dispNum.textContent = n;
+
+  // جلب رقم الشباك من latest أو من operatorWindow
+  const winNum = v.window || v.windowNum || null;
+  const winText = winNum ? `الرجاء التوجه للشباك رقم (${winNum})` : `الرجاء التوجه للشباك`;
+
+  disp.innerHTML = `تذكرة رقم (<b id="dispNum">${n}</b>)<br>${winText}`;
+  disp.style.display = 'block';
+});
+
 })();
 </script>
 </body>
