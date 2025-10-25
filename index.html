@@ -234,29 +234,79 @@ window.print();
 </script>
   <script>
 (function(){
-  const ROOT="cardiac_demo"; // نفس الجذر
-  const disp=document.getElementById('callDisplay');
-  const dispNum=document.getElementById('dispNum');
-  const db=firebase.database();
+  const ROOT = "cardiac_demo";
+  const disp = document.getElementById('callDisplay');
+  const db = firebase.database();
 
-db.ref(`${ROOT}/latest`).on('value', async s=>{
-  const v=s && s.val();
-  if(!v || !v.number){ disp.style.display='none'; return; }
-  const n=v.number;
-  const ns=await db.ref(`${ROOT}/noshow/${n}`).get();
-  if(ns.exists()){ disp.style.display='none'; return; }
+  let lastPlayed = null;
+  let isPlaying = false;
+  let pending = null;
 
-  dispNum.textContent = n;
+  db.ref(`${ROOT}/latest`).on('value', async s => {
+    const v = s && s.val();
+    if (!v || !v.number) return;
 
-  // جلب رقم الشباك من latest أو من operatorWindow
-  const winNum = v.window || v.windowNum || null;
-  const winText = winNum ? `الرجاء التوجه للشباك رقم (${winNum})` : `الرجاء التوجه للشباك`;
+    const n = v.number;
+    const winNum = v.window || v.windowNum || 1;
 
-  disp.innerHTML = `تذكرة رقم (<b id="dispNum">${n}</b>)<br>${winText}`;
-  disp.style.display = 'block';
-});
+    // إذا الرقم نفسه تكرر → تجاهله فورًا
+    if (n === lastPlayed) return;
 
+    // تأكد أنه ليس NoShow
+    const ns = await db.ref(`${ROOT}/noshow/${n}`).get();
+    if (ns.exists()) return;
+
+    // إذا فيه صوت شغال → خزّنه مؤقتًا
+    if (isPlaying) {
+      pending = { number: n, window: winNum };
+      return;
+    }
+
+    // شغّل الرقم الجديد
+    playCall(n, winNum);
+  });
+
+  function playCall(n, winNum) {
+    lastPlayed = n;
+    isPlaying = true;
+
+    // عرض النص
+    const winText = `الرجاء التوجه للشباك رقم (${winNum})`;
+    disp.innerHTML = `تذكرة رقم (<b id="dispNum">${n}</b>)<br>${winText}`;
+    disp.style.display = 'block';
+
+    // تشغيل الصوت
+    const padded = String(n).padStart(3, '0');
+    const audio = new Audio(`voices/ticket-${padded}-to-${winNum}.mp3`);
+    audio.play().then(() => {
+      audio.onended = () => {
+        isPlaying = false;
+
+        // بعد انتهاء الصوت، هل فيه رقم جديد؟
+        if (pending && pending.number !== lastPlayed) {
+          const { number, window } = pending;
+          pending = null;
+          playCall(number, window);
+        } else {
+          pending = null; // إذا كان تكرار، تجاهله
+        }
+      };
+    }).catch(() => {
+      // fallback: انتظر 5 ثواني ثم تابع
+      setTimeout(() => {
+        isPlaying = false;
+        if (pending && pending.number !== lastPlayed) {
+          const { number, window } = pending;
+          pending = null;
+          playCall(number, window);
+        } else {
+          pending = null;
+        }
+      }, 5000);
+    });
+  }
 })();
+
 </script>
 </body>
 </html>
