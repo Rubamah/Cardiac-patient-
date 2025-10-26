@@ -200,7 +200,7 @@
 
     // سجّلي مطبوع + MRN + latestPrinted
     await Promise.all([
-    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() });
+    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() }),
       db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
       db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
     ]);
