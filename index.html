@@ -207,7 +207,7 @@
 
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
-const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
+const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
 document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
