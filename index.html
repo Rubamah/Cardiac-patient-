@@ -1,258 +1,198 @@
 <!DOCTYPE html>
-
-
-
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cardiac Kiosk</title>
+<title>Cardiac Pharmacy Tickets — Realtime Dashboard</title>
 
 <style>
-  :root{--blue:#2563eb;--ink:#0f172a;--muted:#6b7280}
-  *{box-sizing:border-box}
-  body{margin:0;background:#f5f7fb;font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
-  body{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-  .wrap{margin:auto;width:min(960px,96vw);background:#eef2f7;padding:28px;border-radius:18px}
-  .sub{font-size:18px;text-align:center;color:#334155;margin-bottom:6px}
-  h1{font-size:clamp(40px,8.5vw,90px);margin:10px 0;text-align:center}
-  form{display:flex;flex-direction:column;gap:14px;align-items:center}
-  label{font-weight:700}
-  input{width:100%;max-width:680px;padding:16px 18px;font-size:22px;border-radius:14px;border:2px solid #cbd5e1;letter-spacing:1px;text-align:center}
-  input::placeholder{color:#9aa3b2;opacity:.9;text-align:center}
-  input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-  .btn{background:var(--blue);color:#fff;font-weight:800;border:0;padding:14px 22px;border-radius:14px;font-size:22px;cursor:pointer}
-  .next{margin-top:8px;text-align:center;color:var(--muted)}
-  .next b{color:#111}
-  .err{min-height:22px;color:#dc2626;text-align:center}
-
-  /* ===== قالب الطباعة ===== */
-  @media print{
-    @page{ size:80mm auto; margin:0 }
-    body > *{ display:none !important }
-    #ticket{ display:block !important;width:100%;padding:10mm 6mm;font-family:"Tahoma","Segoe UI","Arial",sans-serif;direction:rtl;text-align:center }
-    #tTitle{ font-family:Arial,Helvetica,sans-serif;font-size:16pt;margin:0 0 6mm }
-    #tHello{ display:block;width:100%;font-size:30pt;line-height:1.1;margin:0 0 4mm }
-    #tSub{   display:block;width:100%;font-size:14pt;line-height:1.2;margin:0 0 6mm }
-    #tNum{   display:block;width:100%;font-size:56pt;line-height:1.0;margin:0 0 6mm }
-    #tMrn{   display:block;width:100%;font-size:14pt;margin:0 0 3mm }
-    #tWait{  display:block;width:100%;font-size:13pt;margin:0 0 5mm }
-    #tLine{  height:2px;background:#000;margin:3mm 0 }
-    #tThanks{display:block;width:100%;font-size:20pt;margin:2mm 0 3mm }
-    #tTs{    display:block;width:100%;font-size:11pt;margin:0 }
+  :root{
+    --bg:#0b1320; --card:#111a2b; --ink:#eaf2ff; --muted:#94a3b8;
+    --accent:#14b8a6; --border:#1f2a44; --head:#0f1626;
+    --okbg:#0e2e2a; --okbd:#1a5e56; --oktx:#8ff3e5;
+    --pbg:#2b2040; --pbd:#57468a; --ptx:#d3b3ff;
+    --dbg:#3a1616; --dbd:#6b2323; --dtx:#ffb3b3;
   }
-  /* شاشة النداء داخل الكيوسك (لا تُطبع) */
-#callDisplay {
-  display: none;
-  background: #000;
-  color: #fff;
-  text-align: center;
-  padding: 40px 10px;
-  border-radius: 16px;
-  font-weight: 700;
-  width: 100%;
-  max-width: 680px;
-  margin: 40px auto 40px; /* مسافة متوازنة فوق وتحت */
-  line-height: 1.5;
-  font-size: clamp(50px, 8vw, 100px);
-  box-sizing: border-box;
-}
-#callDisplay b {
-  font-weight: 900;
-}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  header{padding:16px 18px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,#0f172a,#0b1320)}
+  header h1{margin:0;font-size:20px;letter-spacing:.3px}
+  .wrap{max-width:1400px;margin:auto;padding:18px}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;color:var(--muted)}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+  .stat b{color:#fff}
+  .filters{display:grid;gap:12px;grid-template-columns:repeat(12,1fr);align-items:end;margin-top:8px}
+  .field{grid-column:span 3;background:var(--card);border:1px solid var(--border);padding:10px;border-radius:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .field input{width:100%;background:#0a1220;border:1px solid #23314f;color:var(--ink);padding:8px 10px;border-radius:8px;outline:none}
+  .actions{grid-column:span 3;display:flex;gap:8px}
+  button{border:1px solid var(--border);background:#0f1a2e;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .grid{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:900px}
+  thead th{position:sticky;top:0;background:var(--head);color:#bcd0f7;font-weight:700;text-align:center;padding:12px;border-bottom:1px solid #203056}
+  tbody td{padding:10px 8px;border-bottom:1px solid #16213a;text-align:center;font-variant-numeric:tabular-nums}
+  tr:hover td{background:#0e172a80}
+  .badge{display:inline-block;padding:.2em .55em;border-radius:.6em;font-size:.85em}
+  .ok{background:var(--okbg);color:var(--oktx);border:1px solid var(--okbd)}
+  .pending{background:var(--pbg);color:var(--ptx);border:1px solid var(--pbd)}
+  .danger{background:var(--dbg);color:var(--dtx);border:1px solid var(--dbd)}
+  .foot{margin-top:10px;color:var(--muted);font-size:12px}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff}
+  .overlay input{padding:12px 16px;font-size:18px;border-radius:10px;border:1px solid #333;text-align:center;margin:10px 0;width:min(280px,80vw)}
+  .overlay button{background:#2563eb;color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+  .overlay .msg{color:#f99;margin-top:6px;min-height:1.2em}
 </style>
 
-<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
-<div class="wrap">
-  <div class="sub">Cardiac Pharmacy Ticket</div>
-  <h1>مرحبًا</h1>
+<header><h1>لوحة المتابعة اللحظية — Cardiac Pharmacy Tickets</h1></header>
 
-  <form id="f" autocomplete="off">
-    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
-    <input id="mrn" inputmode="numeric" placeholder="MRN" />
-    <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
-    <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
-    <div class="err" id="err"></div>
-    <div class="sub">الرجاء الانتظار قليلًا لحين طباعة التذكرة</div>
-  </form>
-
-  <!-- هنا المستطيل -->
-  <div id="callDisplay">
-    تذكرة رقم (<b id="dispNum"></b>)<br>
-    الرجاء التوجه للشباك
-  </div>
+<div id="gate" class="overlay" style="display:none">
+  <h2>🔒 أدخل كلمة المرور</h2>
+  <input id="pw" type="password" placeholder="Password" />
+  <button id="goBtn">دخول</button>
+  <div id="pwMsg" class="msg"></div>
 </div>
 
-  <!-- قالب التذكرة (يظهر فقط أثناء الطباعة) -->
-  <div id="ticket" style="display:none">
-    <div id="tTitle">Cardiac Pharmacy Ticket</div>
-    <div id="tHello">مرحبًا</div>
-    <div id="tSub">رقمك هو</div>
-    <div id="tNum"></div>
-    <div id="tMrn"></div>
-    <div id="tWait"></div>
-    <div id="tLine"></div>
-    <div id="tThanks">شكرًا لانتظارك</div>
-    <div id="tTs"></div>
+<div id="app" class="wrap" style="display:none">
+  <div class="bar">
+    <span class="stat">إجمالي التذاكر: <b id="statTotal">0</b></span>
+    <span class="stat">المطبوعة: <b id="statPrinted">0</b></span>
+    <span class="stat">المخدّمة: <b id="statServed">0</b></span>
+    <span class="stat">قيد الانتظار: <b id="statWaiting">0</b></span>
   </div>
-<body>
+
+  <div class="filters">
+    <div class="field"><label for="fMrn">بحث حسب MRN</label><input id="fMrn" placeholder="مثال: 123456" inputmode="numeric" /></div>
+    <div class="field"><label for="fTicket">بحث حسب رقم التذكرة</label><input id="fTicket" placeholder="مثال: 87" inputmode="numeric" /></div>
+    <div class="field"><label for="fDate">التاريخ (حسب وقت الطباعة)</label><input id="fDate" type="date" /></div>
+    <div class="actions">
+      <button id="btnClear">مسح الفلاتر</button>
+      <button id="btnExport">تصدير CSV</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <table>
+      <thead><tr>
+        <th>Ticket</th><th>MRN</th><th>Printed Time</th><th>Served Time</th><th>Waiting Time</th><th>Status</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="foot">الحالة: <span class="badge ok">Served</span> / <span class="badge pending">Printed</span> / <span class="badge danger">No time</span>. التحديث لحظي.</div>
+</div>
+
 <script>
-(function(){
-  const PASS = "0619";
-  if(!sessionStorage.getItem("authOK")){
-    const p = prompt("Please enter password:");
-    if(p !== PASS){
-      alert("Incorrect password. Access denied.");
-      document.body.innerHTML = "<h2 style='text-align:center;margin-top:40vh'>Access Denied</h2>";
-      throw new Error("Blocked"); // يوقف بقية الكود
-    }
-    sessionStorage.setItem("authOK","true");
-  }
+const PASS_KEY='phReportOK', PASS_VAL='1', PASSWORD='PhReport';
+(function gate(){
+  const ok=sessionStorage.getItem(PASS_KEY)===PASS_VAL;
+  const gate=document.getElementById('gate'), app=document.getElementById('app');
+  if(!ok){
+    gate.style.display='flex'; app.style.display='none';
+    document.getElementById('goBtn').onclick=()=>{
+      const v=document.getElementById('pw').value.trim();
+      const msg=document.getElementById('pwMsg');
+      if(v===PASSWORD){sessionStorage.setItem(PASS_KEY,PASS_VAL);gate.remove();app.style.display='block';startApp();}
+      else msg.textContent='❌ كلمة المرور غير صحيحة';
+    };
+  }else{gate.remove();app.style.display='block';startApp();}
 })();
-</script>
-<script>
-(function(){
-  // ===== Firebase =====
+
+function startApp(){
   const cfg={apiKey:"AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",authDomain:"q-matic-b7d77.firebaseapp.com",databaseURL:"https://q-matic-b7d77-default-rtdb.firebaseio.com",projectId:"q-matic-b7d77",storageBucket:"q-matic-b7d77.appspot.com",messagingSenderId:"908187704899",appId:"1:908187704899:web:b8bcf33cda90bafe81bef6"};
   firebase.initializeApp(cfg);
-  const db=firebase.database();
-  const ROOT="cardiac_demo";
+  const db=firebase.database(),ROOT='cardiac_demo';
 
-  // عناصر
-  const f=document.getElementById('f');
-  const mrnInput=document.getElementById('mrn');
-  const err=document.getElementById('err');
-  const nextNumEl=document.getElementById('nextNum');
+  const tbody=document.getElementById('tbody'), statTotal=document.getElementById('statTotal'),
+  statPrinted=document.getElementById('statPrinted'),statServed=document.getElementById('statServed'),statWaiting=document.getElementById('statWaiting'),
+  fMrn=document.getElementById('fMrn'),fTk=document.getElementById('fTicket'),fDate=document.getElementById('fDate');
+  document.getElementById('btnClear').onclick=()=>{fMrn.value='';fTk.value='';setToday();render();};
+  document.getElementById('btnExport').onclick=exportCSV;
+  fMrn.addEventListener('input',render);fTk.addEventListener('input',render);fDate.addEventListener('change',render);
 
-  // تحويل الأرقام العربية إلى إنجليزية + تنظيف
-  const ar2en = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d]/g,'');
-  // تحويل إنجليزي إلى عربي لو احتجنا
-  const toAr = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+  fDate.value=`${y}-${m}-${d}`;
 
-  // نص “أمامك …” بصياغة صحيحة
-  function waitingText(n){
-    if(n===0) return 'لا يوجد أشخاص في الانتظار';
-    if(n===1) return 'أمامك شخص واحد في الانتظار';
-    if(n===2) return 'أمامك شخصان في الانتظار';
-    return `أمامك ${toAr(n)} أشخاص في الانتظار`;
+  const rows=new Map();
+  const zp=n=>n<10?'0'+n:''+n;
+  const fmt=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return'';return`${d.getFullYear()}-${zp(d.getMonth()+1)}-${zp(d.getDate())} ${zp(d.getHours())}:${zp(d.getMinutes())}:${zp(d.getSeconds())}`;};
+  const sameDate=(iso,ymd)=>{if(!iso||!ymd)return true;const d=new Date(iso);if(isNaN(d))return false;const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);return local===ymd;};
+  const coerce=raw=>{if(raw==null)return null;if(typeof raw==='string'){const d=new Date(raw);return isNaN(d)?null:d.toISOString();}if(typeof raw==='number'){const d=new Date(raw);return isNaN(d)?null:d.toISOString();}if(typeof raw==='object'&&raw.ts!=null){const d=new Date(raw.ts);return isNaN(d)?null:d.toISOString();}return null;};
+  const normalizeDigits=s=>String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  const isValidServed=r=>r.tServed&&r.tPrinted&&new Date(r.tServed).getTime()>=new Date(r.tPrinted).getTime();
+  const waitingMs=r=>{const p=r.tPrinted?new Date(r.tPrinted).getTime():NaN;const end=isValidServed(r)?new Date(r.tServed).getTime():Date.now();return Number.isNaN(p)?NaN:Math.max(0,end-p);};
+  const dur=ms=>{if(Number.isNaN(ms))return'';const s=Math.floor(ms/1000);return`${zp(Math.floor(s/3600))}:${zp(Math.floor((s%3600)/60))}:${zp(s%60)}`;};
+
+  function mergeSticky(rec,patch){
+    if(patch.printed)rec.printed=true;
+    if(patch.served)rec.served=true;
+    if(patch.tPrinted&&!rec.tPrinted)rec.tPrinted=patch.tPrinted;
+    if(patch.tServed&&!rec.tServed&&isValidServed({...rec,tServed:patch.tServed}))rec.tServed=patch.tServed;
+    if(patch.mrn&&!rec.mrn)rec.mrn=patch.mrn;
+    return rec;
+  }
+  function upsert(id,patch){
+    const rec=rows.get(id)||{ticket:id,mrn:'',printed:false,served:false,tPrinted:null,tServed:null};
+    mergeSticky(rec,patch);rows.set(id,rec);render();
   }
 
-  // يحسب next & waiting (printed && !served && !noshow)
-  async function pickNextAndWaiting(){
-    const [sp, ss, sn] = await Promise.all([
-      db.ref(`${ROOT}/printed`).get(),
-      db.ref(`${ROOT}/served`).get(),
-      db.ref(`${ROOT}/noshow`).get()
-    ]);
-    const P=sp.val()||{}, S=ss.val()||{}, N=sn.val()||{};
+  const add=(ref,fn)=>{ref.on('child_added',fn);ref.on('child_changed',fn);ref.on('child_removed',()=>{});};
 
-    // next هو أول رقم غير موجود في أي من الجداول
-    let next=1;
-    while(next<=1000 && (P[next]||S[next]||N[next])) next++;
+  add(db.ref(`${ROOT}/printed`),c=>{const t=coerce(c.val());if(t)upsert(c.key,{printed:true,tPrinted:t});});
+  add(db.ref(`${ROOT}/times/printed`),c=>{const t=coerce(c.val());if(rows.has(c.key)&&t)upsert(c.key,{tPrinted:t});});
+  add(db.ref(`${ROOT}/served`),c=>{if(rows.has(c.key)&&c.val())upsert(c.key,{served:true});});
+  add(db.ref(`${ROOT}/calls`),c=>{const t=coerce(c.val());if(rows.has(c.key)&&t)upsert(c.key,{tServed:t});});
+  add(db.ref(`${ROOT}/times/served`),c=>{const t=coerce(c.val());if(rows.has(c.key)&&t)upsert(c.key,{tServed:t});});
+  add(db.ref(`${ROOT}/tickets`),c=>{if(!rows.has(c.key))return;const v=c.val();const m=(v&&v.mrn!=null)?normalizeDigits(String(v.mrn)):'';if(m)upsert(c.key,{mrn:m});});
+  add(db.ref(`${ROOT}/mrn`),c=>{if(!rows.has(c.key))return;const m=c.val();const t=(m!=null&&m!=='')?normalizeDigits(String(m)):'';if(t)upsert(c.key,{mrn:t});});
 
-    // المنتظرين: مطبوع قبل next وغير مخدّم وغير NoShow
-    let waiting=0;
-    for(let i=1;i<next;i++){
-      if(P[i] && !S[i] && !N[i]) waiting++;
-    }
-    return {next,waiting};
+  function render(){
+    const mrnF=fMrn.value.trim(),tkF=fTk.value.trim(),dateF=fDate.value;
+    const base=[...rows.values()].filter(r=>{
+      const isPrinted=r.printed||!!r.tPrinted;
+      if(!isPrinted)return false;
+      if(dateF&&r.tPrinted&&!sameDate(r.tPrinted,dateF))return false;
+      if(mrnF&&(!r.mrn||!String(r.mrn).includes(mrnF)))return false;
+      if(tkF&&String(r.ticket)!==String(tkF))return false;
+      return true;
+    }).sort((a,b)=>Number(a.ticket)-Number(b.ticket));
+
+    tbody.innerHTML=base.map(r=>{
+      const served=(!!r.served)||isValidServed(r);
+      const printed=(!!r.printed)||!!r.tPrinted;
+      const status=served?'Served':(printed?'Printed':'No time');
+      const badge=served?'ok':(printed?'pending':'danger');
+      const servedCell=served?fmt(r.tServed):'';
+      return`<tr><td><b>#${r.ticket}</b></td><td>${r.mrn||''}</td><td>${fmt(r.tPrinted)}</td><td>${servedCell}</td><td>${dur(waitingMs(r))}</td><td><span class="badge ${badge}">${status}</span></td></tr>`;
+    }).join('');
+
+    statTotal.textContent=base.length;
+    statPrinted.textContent=base.filter(r=>r.printed||!!r.tPrinted).length;
+    statServed.textContent=base.filter(r=>(!!r.served)||isValidServed(r)).length;
+    statWaiting.textContent=base.filter(r=>{
+      const p=(r.printed||!!r.tPrinted),s=(!!r.served)||isValidServed(r);
+      return p&&!s;
+    }).length;
   }
 
-  // معاينة الرقم التالي
-  async function updateNextPreview(){
-    const {next}=await pickNextAndWaiting();
-    nextNumEl.textContent = toAr(next);
+  setInterval(render,1000);
+
+  function exportCSV(){
+    const headers=['Ticket','MRN','Printed Time','Served Time','Waiting Time (HH:MM:SS)','Status'];
+    const out=[headers.join(',')];
+    Array.from(tbody.querySelectorAll('tr')).forEach(tr=>{
+      const vals=Array.from(tr.children).map(td=>td.innerText.trim());
+      out.push(vals.map(x=>`"${x.replace(/"/g,'""')}"`).join(','));
+    });
+    const name=`cardiac_dashboard_${fDate.value||'all'}.csv`;
+    const blob=new Blob([out.join('\n')],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
   }
-  updateNextPreview();
-
-  // مستمع Restart من الأوبريتور
-  db.ref(`${ROOT}/resetFlag`).on('value', s=>{
-    if(!s.exists()) return;
-    mrnInput.value='';
-    err.textContent='';
-    updateNextPreview();
-  });
-
-  // إرسال/طباعة
-  f.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    err.textContent='';
-
-    const mrn = ar2en(mrnInput.value.trim());
-    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
-    if (mrn.length < 3) {
-  err.textContent = "الرجاء إدخال رقم ملف صحيح";
-  return; // يوقف العملية بالكامل وما يطبع
 }
-
-    // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
-    const {next,waiting} = await pickNextAndWaiting();
-    const ticketNum = next;
-
-    // سجّلي مطبوع + MRN + latestPrinted
-    await Promise.all([
-    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() }),
-      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
-      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
-    ]);
-
-// 4) جهزي التذكرة
-// نحول الأرقام إلى إنجليزية فقط
-const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-
-document.getElementById('tNum').textContent = enNum(ticketNum);
-document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
-document.getElementById('tWait').textContent = waiting === 0
-  ? 'لا يوجد أحد أمامك'
-  : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
-  : waiting === 2 ? 'أمامك شخصان في الانتظار'
-  : `أمامك ${enNum(waiting)} أشخاص في الانتظار`;
-
-const now = new Date();
-const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
-const ampm = now.getHours()>=12 ? 'PM':'AM';
-const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
-document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
-
-// 5) اطبعي
-window.print();
-
-    // نفرّغ الحقل ونحدّث المعاينة
-    mrnInput.value='';
-    updateNextPreview();
-    mrnInput.focus();
-  });
-})();
-</script>
-  <script>
-(function(){
-  const ROOT = "cardiac_demo";
-  const disp = document.getElementById('callDisplay');
-  const db = firebase.database();
-
-  db.ref(`${ROOT}/activeCall`).on('value', s => {
-    const v = s && s.val();
-    if (!v || !v.number) return;
-
-    const n = v.number;
-    const winNum = v.window || v.windowNum || 1;
-
-    const winText = `الرجاء التوجه للشباك رقم (${winNum})`;
-    disp.innerHTML = `تذكرة رقم (<b id="dispNum">${n}</b>)<br>${winText}`;
-    disp.style.display = 'block'; // يبقى ظاهر دائمًا
-  });
-})();
-
-
 </script>
 </body>
 </html>
