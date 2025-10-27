@@ -26,9 +26,6 @@
   input{width:100%;max-width:680px;padding:16px 18px;font-size:22px;border-radius:14px;border:2px solid #cbd5e1;letter-spacing:1px;text-align:center}
   input::placeholder{color:#9aa3b2;opacity:.9;text-align:center}
   input:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-  #mrn, label[for="mrn"] {
-  display: none !important;
-}
   .btn{background:var(--blue);color:#fff;font-weight:800;border:0;padding:14px 22px;border-radius:14px;font-size:22px;cursor:pointer}
   .next{margin-top:8px;text-align:center;color:var(--muted)}
   .next b{color:#111}
@@ -80,7 +77,7 @@
   <h1>مرحبًا</h1>
 
   <form id="f" autocomplete="off">
-    <label for="mrn" class="sub" style="margin-top:8px">الرجاء الضغط على زر طباعةالتذكرة فقط</label>
+    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
     <input id="mrn" inputmode="numeric" placeholder="MRN" />
     <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
     <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
@@ -190,8 +187,12 @@
     e.preventDefault();
     err.textContent='';
 
-    const mrn = "000"; // رقم افتراضي
-
+    const mrn = ar2en(mrnInput.value.trim());
+    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
+    if (mrn.length < 3) {
+  err.textContent = "الرجاء إدخال رقم ملف صحيح";
+  return; // يوقف العملية بالكامل وما يطبع
+}
 
     // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
     const {next,waiting} = await pickNextAndWaiting();
@@ -209,6 +210,7 @@
 const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
+document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
 document.getElementById('tWait').textContent = waiting === 0
   ? 'لا يوجد أحد أمامك'
   : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
