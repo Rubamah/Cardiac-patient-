@@ -40,6 +40,7 @@
     #tHello{ display:block;width:100%;font-size:30pt;line-height:1.1;margin:0 0 4mm }
     #tSub{   display:block;width:100%;font-size:14pt;line-height:1.2;margin:0 0 6mm }
     #tNum{   display:block;width:100%;font-size:56pt;line-height:1.0;margin:0 0 6mm }
+    #tMrn{   display:block;width:100%;font-size:14pt;margin:0 0 3mm }
     #tWait{  display:block;width:100%;font-size:13pt;margin:0 0 5mm }
     #tLine{  height:2px;background:#000;margin:3mm 0 }
     #tThanks{display:block;width:100%;font-size:20pt;margin:2mm 0 3mm }
@@ -76,6 +77,8 @@
   <h1>مرحبًا</h1>
 
   <form id="f" autocomplete="off">
+    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
+    <input id="mrn" inputmode="numeric" placeholder="MRN" />
     <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
     <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
     <div class="err" id="err"></div>
@@ -95,6 +98,7 @@
     <div id="tHello">مرحبًا</div>
     <div id="tSub">رقمك هو</div>
     <div id="tNum"></div>
+    <div id="tMrn"></div>
     <div id="tWait"></div>
     <div id="tLine"></div>
     <div id="tThanks">شكرًا لانتظارك</div>
@@ -183,6 +187,12 @@
     e.preventDefault();
     err.textContent='';
 
+    const mrn = ar2en(mrnInput.value.trim());
+    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
+    if (mrn.length < 3) {
+  err.textContent = "الرجاء إدخال رقم ملف صحيح";
+  return; // يوقف العملية بالكامل وما يطبع
+}
 
     // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
     const {next,waiting} = await pickNextAndWaiting();
@@ -190,15 +200,17 @@
 
     // سجّلي مطبوع + MRN + latestPrinted
     await Promise.all([
-      db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
-      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum })
+    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() }),
+      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
+      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
     ]);
 
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
-const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
+const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
+document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
 document.getElementById('tWait').textContent = waiting === 0
   ? 'لا يوجد أحد أمامك'
   : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
@@ -217,6 +229,7 @@ window.print();
     // نفرّغ الحقل ونحدّث المعاينة
     mrnInput.value='';
     updateNextPreview();
+    mrnInput.focus();
   });
 })();
 </script>
