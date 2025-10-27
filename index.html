@@ -76,6 +76,8 @@
   <h1>مرحبًا</h1>
 
   <form id="f" autocomplete="off">
+    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
+    <input id="mrn" inputmode="numeric" placeholder="MRN" />
     <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
     <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
     <div class="err" id="err"></div>
@@ -125,6 +127,7 @@
 
 ‎  // عناصر
   const f=document.getElementById('f');
+  const
   const err=document.getElementById('err');
   const nextNumEl=document.getElementById('nextNum');
 
@@ -182,7 +185,6 @@
     e.preventDefault();
     err.textContent='';
 
-
 ‎    // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
     const {next,waiting} = await pickNextAndWaiting();
     const ticketNum = next;
@@ -214,9 +216,12 @@ document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
 ‎// 5) اطبعي
 window.print();
 
-// حدّث المعاينة فقط (مافي MRN الآن)
-updateNextPreview();
-
+‎    // نفرّغ الحقل ونحدّث المعاينة
+    mrnInput.value='';
+    updateNextPreview();
+    mrnInput.focus();
+  });
+})();
 </script>
   <script>
 (function(){
