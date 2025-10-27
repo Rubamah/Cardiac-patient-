@@ -200,14 +200,14 @@
 
     // سجّلي مطبوع + MRN + latestPrinted
     await Promise.all([
-    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() }),
+      db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
       db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
       db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
     ]);
 
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
-const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const enNum = n => String(n).replace(/[٠-٩]/g, d => dMap[d]);
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
 document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
@@ -229,7 +229,6 @@ window.print();
     // نفرّغ الحقل ونحدّث المعاينة
     mrnInput.value='';
     updateNextPreview();
-    mrnInput.focus();
   });
 })();
 </script>
