@@ -199,11 +199,23 @@
     const ticketNum = next;
 
     // سجّلي مطبوع + MRN + latestPrinted
-    await Promise.all([
-    db.ref(`${ROOT}/printed/${ticketNum}`).set({ ts: Date.now() }),
-      db.ref(`${ROOT}/mrn/${ticketNum}`).set(mrn),
-      db.ref(`${ROOT}/latestPrinted`).set({number:ticketNum,mrn})
-    ]);
+await Promise.all([
+  // حالة مطبوع (تفيد العدّادات)
+  db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
+
+  // الطابع الزمني الرسمي الذي يقرأه تقريرك
+  db.ref(`${ROOT}/times/printed/${ticketNum}`).set(firebase.database.ServerValue.TIMESTAMP),
+
+  // (اختياري) وقت إنشاء البطاقة داخل سجل التذكرة
+  db.ref(`${ROOT}/tickets/${ticketNum}/createdAt`).set(firebase.database.ServerValue.TIMESTAMP),
+
+  // آخر مطبوع (مفيد لشاشات ثانية)
+  db.ref(`${ROOT}/latestPrinted`).set({
+    number: ticketNum,
+    ts: firebase.database.ServerValue.TIMESTAMP
+  })
+]);
+
 
 // 4) جهزي التذكرة
 // نحول الأرقام إلى إنجليزية فقط
