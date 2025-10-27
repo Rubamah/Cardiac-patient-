@@ -190,12 +190,8 @@
     e.preventDefault();
     err.textContent='';
 
-    const mrn = ar2en(mrnInput.value.trim());
-    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
-    if (mrn.length < 3) {
-  err.textContent = "الرجاء إدخال رقم ملف صحيح";
-  return; // يوقف العملية بالكامل وما يطبع
-}
+    const mrn = "000"; // رقم افتراضي
+
 
     // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
     const {next,waiting} = await pickNextAndWaiting();
@@ -213,7 +209,6 @@
 const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 document.getElementById('tNum').textContent = enNum(ticketNum);
-document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
 document.getElementById('tWait').textContent = waiting === 0
   ? 'لا يوجد أحد أمامك'
   : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
