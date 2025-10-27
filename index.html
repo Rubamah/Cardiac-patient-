@@ -40,7 +40,6 @@
     #tHello{ display:block;width:100%;font-size:30pt;line-height:1.1;margin:0 0 4mm }
     #tSub{   display:block;width:100%;font-size:14pt;line-height:1.2;margin:0 0 6mm }
     #tNum{   display:block;width:100%;font-size:56pt;line-height:1.0;margin:0 0 6mm }
-    #tMrn{   display:block;width:100%;font-size:14pt;margin:0 0 3mm }
     #tWait{  display:block;width:100%;font-size:13pt;margin:0 0 5mm }
     #tLine{  height:2px;background:#000;margin:3mm 0 }
     #tThanks{display:block;width:100%;font-size:20pt;margin:2mm 0 3mm }
@@ -77,8 +76,6 @@
   <h1>مرحبًا</h1>
 
   <form id="f" autocomplete="off">
-    <label for="mrn" class="sub" style="margin-top:8px">الرجاء إدخال رقم الملف (MRN)</label>
-    <input id="mrn" inputmode="numeric" placeholder="MRN" />
     <button class="btn" type="submit">طباعة التذكرة / Print Ticket</button>
     <div class="next">الرقم التالي: <b><span id="nextNum">-</span></b></div>
     <div class="err" id="err"></div>
@@ -98,7 +95,6 @@
     <div id="tHello">مرحبًا</div>
     <div id="tSub">رقمك هو</div>
     <div id="tNum"></div>
-    <div id="tMrn"></div>
     <div id="tWait"></div>
     <div id="tLine"></div>
     <div id="tThanks">شكرًا لانتظارك</div>
@@ -129,12 +125,10 @@
 
   // عناصر
   const f=document.getElementById('f');
-  const mrnInput=document.getElementById('mrn');
   const err=document.getElementById('err');
   const nextNumEl=document.getElementById('nextNum');
 
   // تحويل الأرقام العربية إلى إنجليزية + تنظيف
-  const ar2en = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d]/g,'');
   // تحويل إنجليزي إلى عربي لو احتجنا
   const toAr = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 
@@ -177,73 +171,70 @@
   // مستمع Restart من الأوبريتور
   db.ref(`${ROOT}/resetFlag`).on('value', s=>{
     if(!s.exists()) return;
-    mrnInput.value='';
     err.textContent='';
     updateNextPreview();
   });
 
   // إرسال/طباعة
-  f.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    err.textContent='';
+f.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  err.textContent='';
 
-    const mrn = ar2en(mrnInput.value.trim());
-    if (!mrn || mrn.trim() === "") return err.textContent = "الرجاء إدخال رقم الملف";
-    if (mrn.length < 3) {
-  err.textContent = "الرجاء إدخال رقم ملف صحيح";
-  return; // يوقف العملية بالكامل وما يطبع
-}
+  // 1) احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
+  const {next,waiting} = await pickNextAndWaiting();
+  const ticketNum = next;
 
-    // احسبي next الحقيقي لحظة الطباعة + المنتظرين قبل هذا الرقم
-    const {next,waiting} = await pickNextAndWaiting();
-    const ticketNum = next;
+  // 2) سجّلي مطبوع + latestPrinted (بدون MRN)
+  await Promise.all([
+    db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
+    db.ref(`${ROOT}/times/printed/${ticketNum}`).set(firebase.database.ServerValue.TIMESTAMP),
+    db.ref(`${ROOT}/tickets/${ticketNum}/createdAt`).set(firebase.database.ServerValue.TIMESTAMP),
+    db.ref(`${ROOT}/latestPrinted`).set({
+      number: ticketNum,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    })
+  ]);
 
-    // سجّلي مطبوع + MRN + latestPrinted
-await Promise.all([
-  // حالة مطبوع (تفيد العدّادات)
-  db.ref(`${ROOT}/printed/${ticketNum}`).set(true),
+  // 3) جهزي التذكرة (بدون MRN)
+  const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  document.getElementById('tNum').textContent = enNum(ticketNum);
+  document.getElementById('tWait').textContent = 
+      waiting === 0 ? 'لا يوجد أحد أمامك'
+    : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
+    : waiting === 2 ? 'أمامك شخصان في الانتظار'
+    : `أمامك ${enNum(waiting)} أشخاص في الانتظار`;
 
-  // الطابع الزمني الرسمي الذي يقرأه تقريرك
-  db.ref(`${ROOT}/times/printed/${ticketNum}`).set(firebase.database.ServerValue.TIMESTAMP),
+  const now = new Date();
+  const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
+  const ampm = now.getHours()>=12 ? 'PM':'AM';
+  const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+  document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
 
-  // (اختياري) وقت إنشاء البطاقة داخل سجل التذكرة
-  db.ref(`${ROOT}/tickets/${ticketNum}/createdAt`).set(firebase.database.ServerValue.TIMESTAMP),
+  // 4) اطبعي
+  window.print();
 
-  // آخر مطبوع (مفيد لشاشات ثانية)
-  db.ref(`${ROOT}/latestPrinted`).set({
-    number: ticketNum,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  })
-]);
+  // 5) حدّث المعاينة
+  updateNextPreview();
+});
 
-
-// 4) جهزي التذكرة
-// نحول الأرقام إلى إنجليزية فقط
-const enNum = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-
-document.getElementById('tNum').textContent = enNum(ticketNum);
-document.getElementById('tMrn').textContent = `رقم الملف: ${enNum(mrn)}`;
-document.getElementById('tWait').textContent = waiting === 0
-  ? 'لا يوجد أحد أمامك'
-  : waiting === 1 ? 'أمامك شخص واحد في الانتظار'
-  : waiting === 2 ? 'أمامك شخصان في الانتظار'
-  : `أمامك ${enNum(waiting)} أشخاص في الانتظار`;
-
-const now = new Date();
-const hh = now.getHours()%12 || 12, mm = String(now.getMinutes()).padStart(2,'0');
-const ampm = now.getHours()>=12 ? 'PM':'AM';
-const date = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
-document.getElementById('tTs').textContent = `${hh}:${mm}${ampm} , ${date}`;
-
-// 5) اطبعي
-window.print();
-
-    // نفرّغ الحقل ونحدّث المعاينة
-    mrnInput.value='';
-    updateNextPreview();
-    mrnInput.focus();
-  });
 })();
+</script>
+<script>
+// Global ENTER-to-Print (prevents double firing)
+let _printingLock = false;
+function triggerPrintOnce() {
+  if (_printingLock) return;
+  _printingLock = true;
+  // Submit the existing form to reuse the same handler
+  f.requestSubmit();
+  setTimeout(()=>{ _printingLock = false; }, 600);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.repeat) {
+    e.preventDefault();
+    triggerPrintOnce();
+  }
+});
 </script>
   <script>
 (function(){
